@@ -1,0 +1,3 @@
+[submodule "arch/bluepill"]
+	path = arch/bluepill
+	url = git@github.com:cristovaozr/vez-arch-bluepill.git
