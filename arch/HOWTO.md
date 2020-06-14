@@ -1,25 +1,46 @@
-# Setting up an arch for your microcontroller
+# Escrevendo uma plataforma para seu microcontrolador
 
-This document explains how to setup an arch(itecture) folder for your microcontroller (board). Please see `bluepill` for more examples.
+Esse documento explica como configurar uma pasta de plataforma (arch) para seu microcontrolador. O projeto [vez-arch-bluepill](https://github.com/cristovaozr/vez-arch-bluepill) é um exemplo de como fazer uma plataforma.
 
-# Setting up configuration for the Makefile
+# Realizando a configuração para o Makefile
 
-A file named `config.mk` should exist for each arch definition. On this file arch-specific information for building the project should be inserted. At least the following variables should be set:
+O `Makefile` principal (que está na raíz do projeto) depende da inclusão de um arquivo `config.mk`. Esse arquivo contem a configuração (símbolos e outras coisas) necessárias para a compilação da plataforma. É necessário definir os seguintes símbolos:
 
-* `ARCH_MCU`
-* `ARCH_C_DEFS`
-* `ARCH_C_INCLUDES`
-* `ARCH_C_SOURCES`
-* `ARCH_AS_INCLUDES`
-* `ARCH_ASM_SOURCES`
-* `ARCH_LDSCRIPT`
+|       Símbolo      | Significado |
+|---|---|
+| `ARCH_MCU` | Deve definir tudo da CPU conforme flags do GCC: -mcpu, -mthumb, etc. |
+| `ARCH_C_DEFS` | Deve conter todos os `#define` de C/C++ (e.g.: `-DCLOCK=8000000`) |
+| `ARCH_C_INCLUDES` | Deve conter todos os caminhos de `#include` da plataforma para C/C++ |
+| `ARCH_C_SOURCES` | Deve conter todos os arquivos de código-fonte C/C++ para compilação |
+| `ARCH_AS_INCLUDES` | Deve conter todos os caminhos de `#include` da plataforma para assembly |
+| `ARCH_ASM_SOURCES` | Deve conter todos os arquivos de códig-fonte assembly para compilação |
+| `ARCH_LDSCRIPT` | Deve conter o caminho para o arquivo de linker |
 
-# Setting minimal files and functions to build
+# API mínima para compilação
 
-To be able to build an arch variant the following files should exist:
+Para compilar uma plataforma os seguintes arquivos devem existir:
 
-* An implementation of hardware initialization routines as exported by `${VEZ-BASE}/core/include/hw_init.h` file. Most arches name this file `src/hw_init.c`;
+| Arquivo | Explicação |
+|---|---|
+| Inicialização de hardware | Implementa a API definida no arquivo `${VEZ-BASE}/core/include/hw_init.h`. Normalmente as plataformas nomeiam esse arquivo `hw_init.c` |
+| Arquivo de exportação de dispositivos | Deve ser chamado `include/exported.h` e deve conter todos os objetos, structs, etc. que implementam quaisquer interfaces da API de devices. Todos os objetos que são exportados devem ser marcados com a tag `EXPORTED` disponível em `${VEZ-BASE}/include/utils.h`
 
-# Exported symbols
+# Hardware mínimo que deve estar disponível
 
-There **must** exist a file called `include/exported.h` that contains all objects, structures, etc. that implements any interface from the general API. All objects that appear in `include/exported.h` **must** be marked with a `EXPORTED` tag available at `${VEZ-BASE}/include/utils.h`
+Para a compilação atual do projeto é necessário haver pelo menos dois símbolos disponíveis em `include/exported.h`:
+
+```c
+// Um GPIO (normalmente atribuído a um LED) para a task blinky
+extern const struct gpio_device red_led;
+
+// Uma USART para a task shell
+extern const struct usart_device usart2;
+```
+
+# Coisas pendentes
+
+As seguintes pendências ainda não estão resolvidas para desacoplamento completo das plataformas com o projeto base:
+
+* Desvincular a dependência da task blink de um objeto "red_led";
+* Desvincular a dependência da task shell de um objeto "usart2";
+* Criar uma plataforma "vazia" que permita a compilação do projeto sem necessitar a importação de uma plataforma para o projeto.
