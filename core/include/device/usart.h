@@ -9,6 +9,8 @@
 #ifndef CORE_INCLUDE_DEVICE_USART_H_
 #define CORE_INCLUDE_DEVICE_USART_H_
 
+#include "include/device/pool_op.h"
+
 #include <stdint.h>
 
 struct usart_operations;
@@ -22,10 +24,6 @@ struct usart_device {
      * @brief Private data from the object. Normally contains arch-dependent stuff
      */
     const void * const priv;
-};
-
-enum poll_op {
-    POLL_RX_QUEUE_SIZE   // Checks how many bytes are there in the RX queue
 };
 
 /**

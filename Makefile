@@ -49,7 +49,8 @@ C_SOURCES += \
 C_SOURCES += \
 	core/src/device/device_init.c \
 	core/src/device/gpio.c \
-	core/src/device/usart.c
+	core/src/device/usart.c \
+	core/src/device/pwm.c
 
 # ulibc
 C_SOURCES += \

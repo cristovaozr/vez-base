@@ -8,7 +8,12 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
+
 #include "include/exported.h"
+#include "include/device/pwm.h"
+
+#include "core/include/errors.h"
+
 #include "ulibc/include/ustdio.h"
 #include "ulibc/include/log.h"
 
@@ -119,10 +124,24 @@ static int hexdump(int argc, char **argv)
     return 0;
 }
 
+static int pwm_f(int argc, char **argv)
+{
+    if (argc < 1) return -1;
+    char *endptr = NULL;
+    uint32_t freq = strtoul(argv[0], &endptr, 10);
+    if(endptr[0] != '\0') return -1;
+
+    pwm_set_duty(&pwm_tim1, 32768);
+    if (pwm_set_frequency(&pwm_tim1, freq) != E_SUCCESS) {
+
+    }
+}
+
 static const struct function_list cmd_list[] = {
     {"help", help, "Show help"},
     {"?", help, "Show help"},
     {"hexdump", hexdump, "Dumps memory. Usage: dumpmem [hexaddr] [len]"},
+    {"pwm", pwm_f, "Outputs PWM with defined freq and 50%% duty cycle"},
     {NULL, NULL, NULL}
 };
 
