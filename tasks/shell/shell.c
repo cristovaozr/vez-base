@@ -10,12 +10,14 @@
 #include "task.h"
 
 #include "include/exported.h"
-#include "include/device/pwm.h"
+#include "include/device/spi.h"
+#include "include/device/transaction.h"
 
 #include "core/include/errors.h"
 
 #include "ulibc/include/ustdio.h"
 #include "ulibc/include/log.h"
+#include "ulibc/include/utils.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -124,24 +126,30 @@ static int hexdump(int argc, char **argv)
     return 0;
 }
 
-static int pwm_f(int argc, char **argv)
+static int spitst(int argc, char **argv)
 {
-    if (argc < 1) return -1;
-    char *endptr = NULL;
-    uint32_t freq = strtoul(argv[0], &endptr, 10);
-    if(endptr[0] != '\0') return -1;
+    const uint8_t spitest[8] = {0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xca, 0xfe};
+    uint8_t spiresp[8] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+    struct transaction trans = {
+        .transaction_size = sizeof(spitest),
+        .write_data = spitest,
+        .read_data = spiresp
+    };
 
-    pwm_set_duty(&pwm_tim1, 32768);
-    if (pwm_set_frequency(&pwm_tim1, freq) != E_SUCCESS) {
+    spi_transact(&spi2, &trans, 0);
+    uprintf("Transmited:\r\n");
+    HEXDUMP(spitest, sizeof(spitest));
+    uprintf("Received:\r\n");
+    HEXDUMP(spiresp, sizeof(spiresp));
 
-    }
+    return 0;
 }
 
 static const struct function_list cmd_list[] = {
     {"help", help, "Show help"},
     {"?", help, "Show help"},
     {"hexdump", hexdump, "Dumps memory. Usage: dumpmem [hexaddr] [len]"},
-    {"pwm", pwm_f, "Outputs PWM with defined freq and 50%% duty cycle"},
+    {"spitst", spitst, "Writes data to SPI and dumps answer received"},
     {NULL, NULL, NULL}
 };
 

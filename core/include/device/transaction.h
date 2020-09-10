@@ -15,9 +15,8 @@
  * @brief Defines a transaction for data
  */
 struct transaction {
-    uint32_t write_size;
-    void *write_data;
-    uint32_t read_size;
+    uint32_t transaction_size;
+    const void *write_data;
     void *read_data;
 };
 

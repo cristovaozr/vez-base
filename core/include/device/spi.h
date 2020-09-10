@@ -53,17 +53,6 @@ struct spi_operations {
     int32_t     (*spi_write_op)(const struct spi_device * const spi, const void *data, uint32_t size, uint32_t timeout);
 
     /**
-     * @brief Reads at most [size] bytes from [data] to the SPI.
-     * @param spi SPI device
-     * @param data Data read from SPI hardware
-     * @param size Size in bytes to read from SPI
-     * @param timeout Amount of time, in ms, for timeout
-     *
-     * @return Amount of data read. Negative on error.
-     */
-    int32_t     (*spi_read_op)(const struct spi_device * const spi, void *data, uint32_t size, uint32_t timeout);
-
-    /**
      * @brief Executes a transaction (write followed by a read) on SPI.
      * @param spi SPI device
      * @param transaction Transaction handler
@@ -92,19 +81,7 @@ struct spi_operations {
 extern int32_t spi_write(const struct spi_device * const spi, const void *data, uint32_t size, uint32_t timeout);
 
 /**
- * @brief Reads at most [size] bytes to [data] from the SPI.
- *
- * @param spi Object that represents a SPI
- * @param data Data to read from SPI
- * @param size Number of bytes re read from SPI
- * @param timeout Milliseconds to wait to read
- *
- * @return int32_t Number of bytes read or negative on error.
- */
-extern int32_t spi_read(const struct spi_device  * const spi, void *data, uint32_t size, uint32_t timeout);
-
-/**
- * @brief Executes a transaction (write followed by a read) on SPI.
+ * @brief Executes a transaction (write and read at the same time) on SPI.
  * @param spi SPI device
  * @param transaction Transaction handler
  * @param timeout Timeout, in ms, to wait for each byte write/read
