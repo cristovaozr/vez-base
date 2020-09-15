@@ -19,6 +19,8 @@
 #include "ulibc/include/log.h"
 #include "ulibc/include/utils.h"
 
+#include "drivers/nrf24l01p/nrf24l01p.h"
+
 #include <string.h>
 #include <stdlib.h>
 
@@ -145,11 +147,32 @@ static int spitst(int argc, char **argv)
     return 0;
 }
 
+static int nrftst(int argc, char **argv)
+{
+    struct nrf24l01p nrf24l01p = {
+        .spi_device = &spi2
+    };
+
+    uint8_t status;
+    int32_t ret = nrf24l01p_read_status(&nrf24l01p, &status);
+
+    if (ret < 0) {
+        uprintf("Error reading data from nRF24L01+: %d\r\n", ret);
+        goto exit;
+    }
+
+    uprintf("nrf24l01p status = %.2x\r\n", status);
+
+    exit:
+    return ret;
+}
+
 static const struct function_list cmd_list[] = {
     {"help", help, "Show help"},
     {"?", help, "Show help"},
     {"hexdump", hexdump, "Dumps memory. Usage: dumpmem [hexaddr] [len]"},
     {"spitst", spitst, "Writes data to SPI and dumps answer received"},
+    {"nrftst", nrftst, "Reads nRF24L01+ status register"},
     {NULL, NULL, NULL}
 };
 

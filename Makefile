@@ -63,6 +63,10 @@ C_SOURCES += \
 	tasks/shell/shell.c \
 	tasks/blinky/blinky.c
 
+# Drivers
+C_SOURCES += \
+	drivers/nrf24l01p/nrf24l01p.c
+
 # Fetching sources from ARCH related defines
 C_SOURCES += $(ARCH_C_SOURCES)
 ASM_SOURCES += $(ARCH_ASM_SOURCES)
