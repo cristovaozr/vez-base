@@ -28,7 +28,12 @@ enum errors {
     E_PWM_FREQ_TOO_HIGH,    /** PWM frequency for sound generation is above 4kHz */
     E_PWM_FREQ_TOO_LOW,     /** PWM frequency for sound generation is below 275Hz */
 
+    /***** FIFO errors *****/
+    E_TX_QUEUE_FULL,        /** TX queue full */
+    E_RX_QUEUE_EMPTY,       /** RX queue empty */
+
     /***** Generic error codes *****/
+    E_UNIMPEMENTED,         /** Function not implemented yet */
     E_SUCCESS = 0,          /** Success */
 };
 

@@ -100,7 +100,7 @@ C_INCLUDES += $(ARCH_C_INCLUDES)
 CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) -Wall -fdata-sections -ffunction-sections
 
 ifeq ($(DEBUG), 1)
-CFLAGS += -O0 -ggdb
+CFLAGS += -O0 -ggdb -Werror
 else
 CFLAGS += -Os
 endif
