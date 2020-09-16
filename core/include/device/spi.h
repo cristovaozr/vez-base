@@ -50,7 +50,7 @@ struct spi_operations {
      *
      * @return Amount of data written. Negative on error.
      */
-    int32_t     (*spi_write_op)(const struct spi_device * const spi, const void *data, uint32_t size, uint32_t timeout);
+    int32_t     (*spi_write_op)(const struct spi_device * const spi, uint32_t size, const void *data, uint32_t timeout);
 
     /**
      * @brief Executes a transaction (write followed by a read) on SPI.
@@ -72,13 +72,13 @@ struct spi_operations {
  * @brief Writes at most [size] bytes from [data] to the SPI.
  *
  * @param spi Object that represents a SPI
- * @param data Data to write to SPI
  * @param size Number of bytes to write to SPI
+ * @param data Data to write to SPI
  * @param timeout Milliseconds to wait to write
  *
  * @return int32_t Number of bytes written or negative on error.
  */
-extern int32_t spi_write(const struct spi_device * const spi, const void *data, uint32_t size, uint32_t timeout);
+extern int32_t spi_write(const struct spi_device * const spi, uint32_t size, const void *data, uint32_t timeout);
 
 /**
  * @brief Executes a transaction (write and read at the same time) on SPI.

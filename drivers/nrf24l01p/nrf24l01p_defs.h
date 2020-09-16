@@ -38,6 +38,9 @@
 
 #define NRF24L01P_REG_SETUP_AW      0x03
 #define SETUP_AW_AW_MASK            0b00000011
+#define SETUP_AW_AW_3_BYTES         0b00000001
+#define SETUP_AW_AW_4_BYTES         0b00000010
+#define SETUP_AW_AW_5_BYTES         0b00000011
 
 #define NRF24L01P_REG_SETUP_RETR    0x04
 #define SETUP_RETR_ARD_MSK          0b11110000
@@ -47,11 +50,15 @@
 #define RF_CH_RF_CH_MSK             0b01111111
 
 #define NRF24L01P_REG_RF_SETUP      0x06
-#define SETUP_CONT_WAVE             BIT(7)
-#define SETUP_RF_DR_LOW             BIT(5)
-#define SETUP_PLL_LOCK              BIT(4)
-#define SETUP_RF_DR_HIGH            BIT(3)
-#define SETUP_RF_PWR_MSK            0b00000110
+#define RF_SETUP_CONT_WAVE          BIT(7)
+#define RF_SETUP_RF_DR_LOW          BIT(5)
+#define RF_SETUP_PLL_LOCK           BIT(4)
+#define RF_SETUP_RF_DR_HIGH         BIT(3)
+#define RF_SETUP_RF_PWR_MSK         0b00000110
+#define RF_SETUP_RF_PWR_0           0b00000110
+#define RF_SETUP_RF_PWR_6           0b00000100
+#define RF_SETUP_RF_PWR_12          0b00000010
+#define RF_SETUP_RF_PWR_18          0b00000000
 
 #define NRF24L01P_REG_STATUS        0x07
 #define STATUS_RX_DR                BIT(6)
@@ -81,7 +88,13 @@
 #define NRF24L01P_REG_RX_PW_P3      0x14
 #define NRF24L01P_REG_RX_PW_P4      0x15
 #define NRF24L01P_REG_RX_PW_P5      0x16
+
 #define NRF24L01P_REG_FIFO_STATUS   0x17
+#define FIFO_STATUS_TX_REUSE        BIT(6)
+#define FIFO_STATUS_TX_FULL         BIT(5)
+#define FIFO_STATUS_TX_EMPTY        BIT(4)
+#define FIFO_STATUS_RX_FULL         BIT(1)
+#define FIFO_STATUS_RX_EMPTY        BIT(0)
 
 #define NRF24L01P_REG_DYNPD         0x1c
 #define DYNPD_DPL_P5                BIT(5)
