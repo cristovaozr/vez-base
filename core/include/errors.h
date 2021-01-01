@@ -21,6 +21,7 @@ enum errors {
     E_POLLOPINVALID,        /** Selected poll_op is not valid */
     E_TIMEOUT,              /** Timeout event */
     E_INVALID_PARAMETER,    /** Invalid parameter */
+    E_INVALID_HARDWARE,     /** Invalid hardware detected */
 
     /***** PWM Related errors *****/
     E_INVALID_DUTY_CYCLE,   /** Duty cycle does not comply */

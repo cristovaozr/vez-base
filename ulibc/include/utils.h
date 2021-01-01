@@ -9,6 +9,7 @@
 #ifndef ULIBC_INCLUDE_UTILS_H_
 #define ULIBC_INCLUDE_UTILS_H_
 
+/** Calculates the size of a pre-allocated array */
 #define ARRAY_SIZE(x) (sizeof(x)/(sizeof(x[0])))
 
 #endif // ULIBC_INCLUDE_UTILS_H_
