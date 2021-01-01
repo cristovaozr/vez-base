@@ -12,9 +12,20 @@
 #include <stdint.h>
 
 /**
- * @brief Defines a transaction for data
+ * @brief Defines a SPI transaction
  */
-struct transaction {
+struct spi_transaction {
+    uint32_t transaction_size;
+    const void *write_data;
+    void *read_data;
+};
+
+/**
+ * @brief Defines an I2C transaction
+ */
+struct i2c_transaction {
+    uint8_t i2c_device_addr;
+    uint8_t i2c_device_reg;
     uint32_t transaction_size;
     const void *write_data;
     void *read_data;

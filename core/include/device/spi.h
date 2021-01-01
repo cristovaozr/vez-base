@@ -17,18 +17,17 @@
 struct spi_operations;
 
 /**
- * @brief Defines a object that is a GPIO
+ * @brief Defines a SPI object
  */
 struct spi_device {
+    /** SPI operation definition */
     const struct spi_operations * const ops;
-    /**
-     * @brief Private data from the object. Normally contains arch-dependent stuff
-     */
+    /** SPI private object which is implementation specific */
     const void * const priv;
 };
 
 /**
- * @brief Possible operations on GPIO objects.
+ * @brief Possible operations on SPI objects.
  * Every *_operaitions structure should have the first funptr a init()-like function:
  * it should only receive a "struct *_device * const" and nothing more
  */
@@ -60,7 +59,7 @@ struct spi_operations {
      *
      * @return Negative on error
      */
-    int32_t     (*spi_transact_op)(const struct spi_device * const spi, struct transaction * const transaction,
+    int32_t     (*spi_transact_op)(const struct spi_device * const spi, struct spi_transaction * const transaction,
         uint32_t timeout);
 };
 
@@ -88,6 +87,6 @@ extern int32_t spi_write(const struct spi_device * const spi, uint32_t size, con
  *
  * @return Negative on error
  */
-extern int32_t spi_transact(const struct spi_device * const spi, struct transaction * const transaction, uint32_t timeout);
+extern int32_t spi_transact(const struct spi_device * const spi, struct spi_transaction * const transaction, uint32_t timeout);
 
 #endif // CORE_INCLUDE_DEVICE_SPI_H_

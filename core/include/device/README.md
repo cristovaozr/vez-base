@@ -8,11 +8,13 @@ Also the behavior should be consistent so that higher layers can behave equally.
 
 ## Devices with API already defined
 
-* GPIO
-* USART
-* SPI (Not using IRQs for now)
+* GPIO (arch/bluepill, arch/open407z)
+* USART (arch/bluepill, arch/open407z)
+* SPI (Not using IRQs for now - arch/bluepill)
 
 ## Devices with API missing
 
 * ADC
 * I2C
+* I2S
+* PWM

@@ -42,7 +42,7 @@ static int32_t r_register(const struct nrf24l01p * const device, uint8_t addr, u
     }
 
     payload_out[0] = addr;
-    struct transaction transaction = {
+    struct spi_transaction transaction = {
         .transaction_size = 1 + size,
         .write_data = payload_out,
         .read_data = payload_in
@@ -90,7 +90,7 @@ static int32_t read_modify_write(const struct nrf24l01p * const device, uint8_t 
 {
     int32_t ret;
     uint8_t read_reg[2] = {reg, 0xff}, reg_value[2];
-    struct transaction transaction = {
+    struct spi_transaction transaction = {
         .transaction_size = 2,
         .write_data = &read_reg,
         .read_data = reg_value
@@ -250,7 +250,7 @@ int32_t nrf24l01p_r_rx_payload(const struct nrf24l01p * const device, uint32_t s
         ret = E_RX_QUEUE_EMPTY;
         goto exit;
     }
-    struct transaction transaction = {
+    struct spi_transaction transaction = {
         .transaction_size = 1 + size,
         .write_data = data_to_write,
         .read_data = data_to_read
