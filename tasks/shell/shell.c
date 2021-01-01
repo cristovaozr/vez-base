@@ -91,7 +91,7 @@ void shell_task(void *arg)
 
 void greeter(void)
 {
-    uprintf("Shell\r\n");
+    uprintf("VEZ Tiny Shell\r\n");
     uprintf("Build date: %s, %s\r\n", __DATE__ , __TIME__);
 }
 
@@ -128,152 +128,10 @@ static int hexdump(int argc, char **argv)
     return 0;
 }
 
-static int spitst(int argc, char **argv)
-{
-    const uint8_t spitest[8] = {0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xca, 0xfe};
-    uint8_t spiresp[8] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-    struct transaction trans = {
-        .transaction_size = sizeof(spitest),
-        .write_data = spitest,
-        .read_data = spiresp
-    };
-
-    spi_transact(&spi2, &trans, 0);
-    uprintf("Transmited:\r\n");
-    HEXDUMP(spitest, sizeof(spitest));
-    uprintf("Received:\r\n");
-    HEXDUMP(spiresp, sizeof(spiresp));
-
-    return 0;
-}
-
-static int nrftst(int argc, char **argv)
-{
-    struct nrf24l01p nrf24l01p = {
-        .spi_device = &spi2
-    };
-
-    uint8_t status;
-    int32_t ret = nrf24l01p_get_status(&nrf24l01p, &status);
-
-    if (ret < 0) {
-        uprintf("Error reading data from nRF24L01+: %d\r\n", ret);
-        goto exit;
-    }
-
-    uprintf("nrf24l01p status = %.2x\r\n", status);
-
-    exit:
-    return ret;
-}
-
-static int nrftst2(int argc, char **argv)
-{
-    const char *msg = "Hello nRF24L01+";
-    int msglen = strlen(msg);
-    const struct nrf24l01p nrf24l01p = { .spi_device = &spi2, .ce_gpio = &nrf24l01p_ce };
-    uint8_t fifo_st;
-    int32_t ret;
-
-    ret = nrf24l01p_default_setup(&nrf24l01p);
-    uprintf("nrf24l01p_default_setup() == %d\r\n", ret);
-    ret = nrf24l01p_standby_1(&nrf24l01p);
-    uprintf("nrf24l01p_standby_1() == %d\r\n", ret);
-
-    // First payload to write
-    ret = nrf24l01p_get_fifo_status(&nrf24l01p, &fifo_st);
-    uprintf("nrf24l01p_get_fifo_status() = %d, fifo_st = %x\r\n", ret, fifo_st);
-    ret = nrf24l01p_w_tx_payload(&nrf24l01p, msglen, msg);
-    uprintf("nrf24l01p_w_tx_payload() == %d\r\n", ret);
-
-    // Second payload to write
-    ret = nrf24l01p_get_fifo_status(&nrf24l01p, &fifo_st);
-    uprintf("nrf24l01p_get_fifo_status() = %d, fifo_st = %x\r\n", ret, fifo_st);
-    ret = nrf24l01p_w_tx_payload(&nrf24l01p, msglen, msg);
-    uprintf("nrf24l01p_w_tx_payload() == %d\r\n", ret);
-
-    // Third payload to write
-    ret = nrf24l01p_get_fifo_status(&nrf24l01p, &fifo_st);
-    uprintf("nrf24l01p_get_fifo_status() = %d, fifo_st = %x\r\n", ret, fifo_st);
-    ret = nrf24l01p_w_tx_payload(&nrf24l01p, msglen, msg);
-    uprintf("nrf24l01p_w_tx_payload() == %d\r\n", ret);
-
-    // Fourth payload to write (should now return E_TX_QUEUE_FULL)
-    ret = nrf24l01p_get_fifo_status(&nrf24l01p, &fifo_st);
-    uprintf("nrf24l01p_get_fifo_status() = %d, fifo_st = %x\r\n", ret, fifo_st);
-    ret = nrf24l01p_w_tx_payload(&nrf24l01p, msglen, msg);
-    uprintf("nrf24l01p_w_tx_payload() == %d\r\n", ret);
-
-    ret = nrf24l01p_enable_tx_mode(&nrf24l01p);
-    uprintf("nrf24l01p_enable_tx_mode() == %d\r\n", ret);
-    nrf24l01p_transmit(&nrf24l01p);
-    ret = nrf24l01p_disable_tx_mode(&nrf24l01p);
-    uprintf("nrf24l01p_disable_tx_mode() == %d\r\n", ret);
-
-    // FIFO should now have two used slots
-    ret = nrf24l01p_get_fifo_status(&nrf24l01p, &fifo_st);
-    uprintf("nrf24l01p_get_fifo_status() = %d, fifo_st = %x\r\n", ret, fifo_st);
-
-    ret = nrf24l01p_flush_tx(&nrf24l01p);
-    uprintf("nrf24l01p_flush_tx() = %d\r\n", ret);
-
-    // After TX fifo flush there should be no TX packet on queue and TX queue should be empty
-    nrf24l01p_get_fifo_status(&nrf24l01p, &fifo_st);
-    uprintf("nrf24l01p_get_fifo_status() = %d, fifo_st = %x\r\n", ret, fifo_st);
-
-    return 0;
-}
-
-static int nrftst3(int argc, char **argv)
-{
-    const char *msg = "Hello nRF24L01+";
-    char recvmsg[33];
-    int msglen = strlen(msg);
-    const struct nrf24l01p nrf24l01p_sender = { .spi_device = &spi2, .ce_gpio = &nrf24l01p_ce };
-    const struct nrf24l01p nrf24l01p_receiv = { .spi_device = &spi1, .ce_gpio = &nrf24l01p_ce2 };
-    uint8_t fifo_st, rx_pipe_size;
-    int32_t ret;
-
-    ret = nrf24l01p_default_setup(&nrf24l01p_sender);
-    uprintf("nrf24l01p_default_setup(&nrf24l01p_sender) == %d\r\n", ret);
-    ret = nrf24l01p_default_setup(&nrf24l01p_receiv);
-    uprintf("nrf24l01p_default_setup(&nrf24l01p_receiv) == %d\r\n", ret);
-
-    ret = nrf24l01p_standby_1(&nrf24l01p_sender);
-    uprintf("nrf24l01p_standby_1(nrf24l01p_sender) == %d\r\n", ret);
-    ret = nrf24l01p_standby_1(&nrf24l01p_receiv);
-    uprintf("nrf24l01p_standby_1(nrf24l01p_receiv) == %d\r\n", ret);
-
-    ret = nrf24l01p_w_tx_payload(&nrf24l01p_sender, msglen, msg);
-    uprintf("nrf24l01p_w_tx_payload(&nrf24l01p_sender) == %d\r\n", ret);
-    nrf24l01p_enable_receiver(&nrf24l01p_receiv);
-    ret = nrf24l01p_enable_tx_mode(&nrf24l01p_sender);
-    nrf24l01p_transmit(&nrf24l01p_sender);
-    ret = nrf24l01p_disable_tx_mode(&nrf24l01p_sender);
-    nrf24l01p_disable_receiver(&nrf24l01p_receiv);
-
-    ret = nrf24l01p_get_fifo_status(&nrf24l01p_receiv, &fifo_st);
-    uprintf("nrf24l01p_get_fifo_status(&nrf24l01p_receiv) == %d, fifo_st == %x\r\n", ret, fifo_st);
-
-    ret = nrf24l01p_get_rx_pw_p0(&nrf24l01p_receiv, &rx_pipe_size);
-    uprintf("nrf24l01p_get_rx_pw_p0(&nrf24l01p_receiv) == %d, rx_pipe_size == %x\r\n", ret, rx_pipe_size);
-
-    memset(recvmsg, 0x00, sizeof(recvmsg));
-    ret = nrf24l01p_r_rx_payload(&nrf24l01p_receiv, rx_pipe_size, recvmsg);
-    uprintf("nrf24l01p_r_rx_payload(&nrf24l01p_receiv) == %d\r\n", ret);
-    uprintf("Received: %s\r\n", recvmsg);
-
-    return 0;
-}
-
 static const struct function_list cmd_list[] = {
     {"help", help, "Show help"},
     {"?", help, "Show help"},
     {"hexdump", hexdump, "Dumps memory. Usage: dumpmem [hexaddr] [len]"},
-    {"spitst", spitst, "Writes data to SPI and dumps answer received"},
-    {"nrftst", nrftst, "Reads nRF24L01+ status register"},
-    {"nrftst2", nrftst2, "Tests transmission of a packet and other functions"},
-    {"nrftst3", nrftst3, "Tests reception of a packet"},
     {NULL, NULL, NULL}
 };
 
