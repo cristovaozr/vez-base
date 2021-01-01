@@ -10,9 +10,9 @@ Also the behavior should be consistent so that higher layers can behave equally.
 
 * GPIO
 * USART
+* SPI (Not using IRQs for now)
 
 ## Devices with API missing
 
-* SPI
 * ADC
 * I2C

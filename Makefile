@@ -42,7 +42,6 @@ C_SOURCES += \
 	freertos/tasks.c \
 	freertos/timers.c \
 	arch/$(ARCH)/freertos/portable/MemMang/heap_4.c \
-	arch/$(ARCH)/freertos/portable/GCC/ARM_CM3/port.c
 # TODO: Change to the improved automatic HEAP user
 
 # Devices
