@@ -50,7 +50,8 @@ C_SOURCES += \
 	core/src/device/gpio.c \
 	core/src/device/usart.c \
 	core/src/device/pwm.c \
-	core/src/device/spi.c
+	core/src/device/spi.c \
+	core/src/device/i2c.c
 
 # ulibc
 C_SOURCES += \
