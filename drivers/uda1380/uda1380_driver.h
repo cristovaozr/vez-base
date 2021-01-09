@@ -12,6 +12,7 @@
 #include <stdint.h>
 
 #include "include/device/i2c.h"
+#include "include/device/i2s.h"
 
 /**
  * @brief Configures and starts UDA1380 I2S CODEC
@@ -27,6 +28,6 @@ extern int32_t uda1380_init(const struct i2c_device *i2c);
  * @param l_ch Left channel data
  * @param r_ch Right channel data
  */
-extern void uda1380_write_blocking(uint16_t l_ch, uint16_t r_ch);
+extern void uda1380_write_blocking(const struct i2s_device *i2s, uint16_t l_ch, uint16_t r_ch);
 
 #endif // DRIVERS_UDA_1380_UDA1380_DRIVER_H_

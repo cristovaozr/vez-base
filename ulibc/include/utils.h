@@ -12,4 +12,10 @@
 /** Calculates the size of a pre-allocated array */
 #define ARRAY_SIZE(x) (sizeof(x)/(sizeof(x[0])))
 
+/** Reverts 16 bits values */
+#define REV16(x) (uint16_t)(((x) & 0xff00) >> 8 | ((x) & 0x00ff) << 8)
+
+/** Reverts 32 bits values */
+#define REV32(x) (uint32_t)(((x) & 0xff000000) >> 24 | ((x) & 0xff0000) >> 8 | ((x) & 0xff00) << 8 | ((x) & 0xff) << 24)
+
 #endif // ULIBC_INCLUDE_UTILS_H_

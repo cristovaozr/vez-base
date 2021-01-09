@@ -10,6 +10,7 @@
 
 #include "include/device/i2c.h"
 #include "include/device/transaction.h"
+#include "include/device/i2s.h"
 
 #include "include/errors.h"
 #include "ulibc/include/utils.h"
@@ -66,17 +67,14 @@ int32_t uda1380_init(const struct i2c_device *i2c)
         };
 
         ret = i2c_write(i2c, &transaction, 0);
-        if (ret != E_SUCCESS) goto exit;
+        if (ret < 0) goto exit;
     }
 
     exit:
     return ret;
 }
 
-void uda1380_write_blocking(uint16_t l_ch, uint16_t r_ch)
+void uda1380_write_blocking(const struct i2s_device *i2s, uint16_t l_ch, uint16_t r_ch)
 {
-    // while (LL_I2S_IsActiveFlag_TXE(SPI2) == 0);
-    // LL_I2S_TransmitData16(SPI2, l_ch);
-    // while (LL_I2S_IsActiveFlag_TXE(SPI2) == 0);
-    // LL_I2S_TransmitData16(SPI2, r_ch);
+    i2s_write(i2s, l_ch, r_ch);
 }
