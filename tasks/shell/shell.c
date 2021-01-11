@@ -20,9 +20,12 @@
 #include "ulibc/include/utils.h"
 
 #include "drivers/nrf24l01p/nrf24l01p.h"
+#include "drivers/mpu6050/mpu6050_driver.h"
+#include "drivers/uda1380/uda1380_driver.h"
 
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 #define SHELL_BANNER "> "
 
@@ -128,10 +131,54 @@ static int hexdump(int argc, char **argv)
     return 0;
 }
 
+static int mpu6050(int argc, char **argv)
+{
+    struct mpu6050_axis axis;
+    int32_t ret;
+
+    ret = mpu6050_init(&i2c1);
+    uprintf("mpu6050_init()==%d\r\n", ret);
+    uprintf("mpu6050_read_accel_info()==%d\r\n", ret);
+
+    uprintf("Press 'q' to quit readint\r\n");
+    while (1) {
+        mpu6050_read_accel_info(&i2c1, &axis);
+        uprintf("Accel read: x=%d, y=%d, z=%d\r\n", axis.x_axis, axis.y_axis, axis.z_axis);
+        mpu6050_read_gyro_info(&i2c1, &axis);
+        uprintf("Gyro read: x=%d, y=%d, z=%d\r\n", axis.x_axis, axis.y_axis, axis.z_axis);
+        int c = ugetchar();
+        if (c == 'q' || c == 'Q') break;
+        vTaskDelay(250);
+    }
+
+    return 0;
+}
+
+static int uda1380(int argc, char **argv)
+{
+    int32_t ret;
+
+    ret = uda1380_init(&i2c1);
+    if (ret < 0) {
+        return -1;
+    }
+
+    const float w = 2.0f * M_PI * 1000.0f / 8000.0f;
+    for(int i = 0; i < 80000; i++) {
+        union {int16_t s; uint16_t u;} sample;
+        sample.s = (int16_t)(10000.0f*sinf(w * i));
+        uda1380_write_blocking(&i2s3, sample.u, sample.u);
+    }
+
+    return 0;
+}
+
 static const struct function_list cmd_list[] = {
     {"help", help, "Show help"},
     {"?", help, "Show help"},
     {"hexdump", hexdump, "Dumps memory. Usage: dumpmem [hexaddr] [len]"},
+    {"mpu6050", mpu6050, "Reads local acceleration using MPU6050 via I2C"},
+    {"uda1380", uda1380, "Writes for ever using UDA1380 via I2S"},
     {NULL, NULL, NULL}
 };
 

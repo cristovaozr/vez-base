@@ -51,7 +51,8 @@ C_SOURCES += \
 	core/src/device/usart.c \
 	core/src/device/pwm.c \
 	core/src/device/spi.c \
-	core/src/device/i2c.c
+	core/src/device/i2c.c \
+	core/sec/device/i2s.c
 
 # ulibc
 C_SOURCES += \
@@ -65,7 +66,9 @@ C_SOURCES += \
 
 # Drivers
 C_SOURCES += \
-	drivers/nrf24l01p/nrf24l01p.c
+	drivers/nrf24l01p/nrf24l01p.c \
+	drivers/mpu6050/mpu6050_driver.c \
+	drivers/uda1380/uda1380_driver.c
 
 # Fetching sources from ARCH related defines
 C_SOURCES += $(ARCH_C_SOURCES)
