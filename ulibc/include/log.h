@@ -45,7 +45,7 @@ extern void hex_ulog(const void *data, uint32_t len);
 #if (RELEASE)
 #define DBG(tag, fmt, ...)
 #else
-#define DBG(tag, fmt, ...) ulog(DBG_LVL, tag, fmt, ##__VA_ARGS__)
+#define DBG(tag, fmt, ...) ulog(DEBUG_LVL, tag, fmt, ##__VA_ARGS__)
 #endif
 
 /**
