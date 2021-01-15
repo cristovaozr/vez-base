@@ -6,7 +6,7 @@
  * Please see LICENCE file to information regarding licensing
  */
 
-#include "include/device/device_init.h"
+#include "include/device/device.h"
 
 #include <stdint.h>
 

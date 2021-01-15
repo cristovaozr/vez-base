@@ -46,7 +46,7 @@ C_SOURCES += \
 
 # Devices
 C_SOURCES += \
-	core/src/device/device_init.c \
+	core/src/device/device.c \
 	core/src/device/gpio.c \
 	core/src/device/usart.c \
 	core/src/device/pwm.c \

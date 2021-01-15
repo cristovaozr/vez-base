@@ -6,8 +6,8 @@
  * Please see LICENCE file to information regarding licensing
  */
 
-#ifndef CORE_INCLUDE_DEVICE_DEVICE_INIT_H_
-#define CORE_INCLUDE_DEVICE_DEVICE_INIT_H_
+#ifndef CORE_INCLUDE_DEVICE_DEVICE_H_
+#define CORE_INCLUDE_DEVICE_DEVICE_H_
 
 #include <stdint.h>
 
@@ -23,4 +23,15 @@
  */
 extern int32_t device_init(const void * const device);
 
-#endif // CORE_INCLUDE_DEVICE_DEVICE_INIT_H_
+/**
+ * @brief Obtains a device by its name
+ *
+ * @param dev_name Device name 
+ * @return const void* Generic pointer to device
+ */
+extern const void *device_get_by_name(const char *dev_name);
+
+#define DEFAULT_USART   "usart1"
+#define DEFAULT_LED     "led_gpio"
+
+#endif // CORE_INCLUDE_DEVICE_DEVICE_H_

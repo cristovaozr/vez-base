@@ -9,7 +9,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "include/exported.h"
+#include "include/device/device.h"
 #include "include/device/spi.h"
 #include "include/device/transaction.h"
 
@@ -135,16 +135,21 @@ static int mpu6050(int argc, char **argv)
 {
     struct mpu6050_axis axis;
     int32_t ret;
+    const struct i2c_device *i2c = device_get_by_name("i2c1");
+    if (i2c == NULL) {
+        uprintf("Could not get I2C device\r\n");
+        return -1;
+    }
 
-    ret = mpu6050_init(&i2c1);
+    ret = mpu6050_init(i2c);
     uprintf("mpu6050_init()==%d\r\n", ret);
     uprintf("mpu6050_read_accel_info()==%d\r\n", ret);
 
     uprintf("Press 'q' to quit readint\r\n");
     while (1) {
-        mpu6050_read_accel_info(&i2c1, &axis);
+        mpu6050_read_accel_info(i2c, &axis);
         uprintf("Accel read: x=%d, y=%d, z=%d\r\n", axis.x_axis, axis.y_axis, axis.z_axis);
-        mpu6050_read_gyro_info(&i2c1, &axis);
+        mpu6050_read_gyro_info(i2c, &axis);
         uprintf("Gyro read: x=%d, y=%d, z=%d\r\n", axis.x_axis, axis.y_axis, axis.z_axis);
         int c = ugetchar();
         if (c == 'q' || c == 'Q') break;
@@ -157,8 +162,19 @@ static int mpu6050(int argc, char **argv)
 static int uda1380(int argc, char **argv)
 {
     int32_t ret;
+    const struct i2c_device *i2c = device_get_by_name("i2c1");
+    const struct i2s_device *i2s3 = device_get_by_name("i2s3");
 
-    ret = uda1380_init(&i2c1);
+    if (i2c == NULL) {
+        uprintf("Could not get I2C device\r\n");
+        return -1;
+    }
+    if (i2s3 == NULL) {
+        uprintf("Could not get I2S device\r\n");
+        return -1;
+    }
+
+    ret = uda1380_init(i2c);
     if (ret < 0) {
         return -1;
     }
@@ -167,7 +183,7 @@ static int uda1380(int argc, char **argv)
     for(int i = 0; i < 80000; i++) {
         union {int16_t s; uint16_t u;} sample;
         sample.s = (int16_t)(10000.0f*sinf(w * i));
-        uda1380_write_blocking(&i2s3, sample.u, sample.u);
+        uda1380_write_blocking(i2s3, sample.u, sample.u);
     }
 
     return 0;
