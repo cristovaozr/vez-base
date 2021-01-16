@@ -53,6 +53,7 @@ static void greeter(void);
  * @brief Variable that stores a line to process
  */
 static char line[80];
+static char last_line[80];
 
 void shell_task(void *arg)
 {
@@ -77,11 +78,19 @@ void shell_task(void *arg)
         case '\r':
             uprintf("\r\n");
             line[pos] = '\0'; // EOL
+            // Saves last line
+            if (pos > 0) strcpy(last_line, line);
             process_line(line);
             pos = 0;
             uprintf(SHELL_BANNER); // New line
             break;
-        
+
+        case 0x12: // CTRL + R
+            strcpy(line, last_line);
+            uprintf("%s", line);
+            pos = strlen(line);
+            break;
+
         default:
             // If line buffer is full stop printint chars
             if (pos > sizeof(line)) break;
@@ -145,7 +154,7 @@ static int mpu6050(int argc, char **argv)
     uprintf("mpu6050_init()==%d\r\n", ret);
     uprintf("mpu6050_read_accel_info()==%d\r\n", ret);
 
-    uprintf("Press 'q' to quit readint\r\n");
+    uprintf("Press 'q' to quit reading\r\n");
     while (1) {
         mpu6050_read_accel_info(i2c, &axis);
         uprintf("Accel read: x=%d, y=%d, z=%d\r\n", axis.x_axis, axis.y_axis, axis.z_axis);

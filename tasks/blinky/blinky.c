@@ -6,6 +6,8 @@
  * Please see LICENCE file to information regarding licensing
  */
 
+#include "ulibc/include/ustdio.h"
+
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -18,10 +20,10 @@ void blinky(void *arg)
     const struct gpio_device *gpio = device_get_by_name("led_gpio");
     if (gpio == NULL) {
         uprintf("Could not get GPIO LED device\r\n");
-        return -1;
+        while (1);
     }
 
-    while(1) {
+    while (1) {
         gpio_toggle(gpio);
         vTaskDelay(250);
     }

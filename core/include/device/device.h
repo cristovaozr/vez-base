@@ -31,7 +31,7 @@ extern int32_t device_init(const void * const device);
  */
 extern const void *device_get_by_name(const char *dev_name);
 
-#define DEFAULT_USART   "usart1"
+#define DEFAULT_USART   "default_usart"
 #define DEFAULT_LED     "led_gpio"
 
 #endif // CORE_INCLUDE_DEVICE_DEVICE_H_
