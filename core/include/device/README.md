@@ -10,11 +10,11 @@ Also the behavior should be consistent so that higher layers can behave equally.
 
 * GPIO (arch/bluepill, arch/open407z)
 * USART (arch/bluepill, arch/open407z)
-* SPI (Not using IRQs for now - arch/bluepill)
+* SPI (Not using IRQs for now - arch/bluepill, arch/open407z)
+* I2C (Not using IRQs for now - arch/bluepill, arch/open407z)
+* I2S (Not using IRQs for now - arch/open407z)
 
 ## Devices with API missing
 
 * ADC
-* I2C
-* I2S
 * PWM

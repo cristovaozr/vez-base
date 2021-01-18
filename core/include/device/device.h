@@ -31,7 +31,9 @@ extern int32_t device_init(const void * const device);
  */
 extern const void *device_get_by_name(const char *dev_name);
 
+/** USART used for Shell */
 #define DEFAULT_USART   "default_usart"
+/** LED used for blinky task */
 #define DEFAULT_LED     "led_gpio"
 
 #endif // CORE_INCLUDE_DEVICE_DEVICE_H_

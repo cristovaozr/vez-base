@@ -7,6 +7,8 @@
  */
 
 #include "include/hw_init.h"
+#include "include/errors.h"
+
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -21,11 +23,11 @@ extern void MX_FREERTOS_Init(void);
 int main(void)
 {
     // Configuration that should be run before hardware initialization, if any
-    hw_init_early_config();
+    if (hw_init_early_config() != E_SUCCESS) while(1);
     // Actual hardware initialization
-    hw_init();
+    if (hw_init() != E_SUCCESS) while (1);
     // Configuration that shoud be run after hardware initialization, if any
-    hw_init_late_config();
+    if (hw_init_late_config() != E_SUCCESS) while(1);
 
     /* Call init function for freertos objects (in freertos.c) */
     MX_FREERTOS_Init(); 
