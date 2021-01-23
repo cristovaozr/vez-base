@@ -70,6 +70,10 @@ C_SOURCES += \
 	drivers/mpu6050/mpu6050_driver.c \
 	drivers/uda1380/uda1380_driver.c
 
+# Components
+C_SOURCES += \
+	components/vez-shell/src/vez-shell.c
+
 # Fetching sources from ARCH related defines
 C_SOURCES += $(ARCH_C_SOURCES)
 ASM_SOURCES += $(ARCH_ASM_SOURCES)
@@ -82,7 +86,8 @@ AS_DEFS = $(ARCH_AS_DEFS)
 
 # AS includes
 AS_INCLUDES += \
-	-Icore/include
+	-Icore/include \
+	-Icomponents/vez-shell
 AS_INCLUDES += $(ARCH_AS_INCLUDES)
 
 # AS flags
@@ -96,7 +101,8 @@ C_INCLUDES += \
 	-I. \
 	-Icore \
 	-Icore/include \
-	-Ifreertos/include
+	-Ifreertos/include \
+	-Icomponents/vez-shell
 C_INCLUDES += $(ARCH_C_INCLUDES)
 
 # C flags

@@ -23,89 +23,15 @@
 #include "drivers/mpu6050/mpu6050_driver.h"
 #include "drivers/uda1380/uda1380_driver.h"
 
+#include "include/device/i2c.h"
+
+#include "components/vez-shell/include/vez-shell.h"
+
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
 
-#define SHELL_BANNER "> "
-
-struct function_list {
-    const char *cmd;
-    int (*fp)(int, char **);
-    const char *help_str;
-};
-
-static const struct function_list cmd_list[];
-
-/**
- * @brief Parses a line and chooses a command to execute
- * 
- * @param line 
- */
-static void process_line(char *line);
-
-/**
- * @brief Greeter that shows information on Shell start
- */
-static void greeter(void);
-
-/**
- * @brief Variable that stores a line to process
- */
-static char line[80];
-static char last_line[80];
-
-void shell_task(void *arg)
-{
-    (void)arg;
-    int pos = 0;
-
-    greeter();
-    uprintf(SHELL_BANNER);
-
-    while(1) {
-        int c = ugetchar();
-        if (c == -1) continue;
-
-        switch (c) {
-        case '\b': // Backspace
-        case 0x7f:
-            if (pos > 0) uputchar(c);
-            pos = ((pos - 1) < 0) ? 0 : pos - 1;
-            break;
-
-        case '\n':
-        case '\r':
-            uprintf("\r\n");
-            line[pos] = '\0'; // EOL
-            // Saves last line
-            if (pos > 0) strcpy(last_line, line);
-            process_line(line);
-            pos = 0;
-            uprintf(SHELL_BANNER); // New line
-            break;
-
-        case 0x12: // CTRL + R
-            strcpy(line, last_line);
-            uprintf("%s", line);
-            pos = strlen(line);
-            break;
-
-        default:
-            // If line buffer is full stop printint chars
-            if (pos > sizeof(line)) break;
-            uputchar(c);
-            line[pos++] = c;
-            break;
-        }
-    }
-}
-
-void greeter(void)
-{
-    uprintf("VEZ Tiny Shell\r\n");
-    uprintf("Build date: %s, %s\r\n", __DATE__ , __TIME__);
-}
+static const struct vez_shell_entry cmd_list[];
 
 /**
  * @brief Prints help
@@ -142,7 +68,6 @@ static int hexdump(int argc, char **argv)
 
 static int mpu6050(int argc, char **argv)
 {
-    struct mpu6050_axis axis;
     int32_t ret;
     const struct i2c_device *i2c = device_get_by_name("i2c1");
     if (i2c == NULL) {
@@ -156,8 +81,10 @@ static int mpu6050(int argc, char **argv)
 
     uprintf("Press 'q' to quit reading\r\n");
     while (1) {
+        struct mpu6050_axis axis = {0,0,0};
         mpu6050_read_accel_info(i2c, &axis);
         uprintf("Accel read: x=%d, y=%d, z=%d\r\n", axis.x_axis, axis.y_axis, axis.z_axis);
+        memset(&axis, 0x00, sizeof(axis));
         mpu6050_read_gyro_info(i2c, &axis);
         uprintf("Gyro read: x=%d, y=%d, z=%d\r\n", axis.x_axis, axis.y_axis, axis.z_axis);
         int c = ugetchar();
@@ -198,41 +125,67 @@ static int uda1380(int argc, char **argv)
     return 0;
 }
 
-static const struct function_list cmd_list[] = {
+static int i2c(int argc, char **argv)
+{
+    int ret;
+
+    const struct i2c_device *i2c = device_get_by_name("i2c1");
+    if (i2c == NULL) {
+        uprintf("Could not obtain I2C device\r\n");
+        ret = -1;
+        goto exit;
+    }
+
+    uint8_t byte = 0x18;
+    struct i2c_transaction transaction = {
+        .i2c_device_addr = 0x68,
+        .i2c_device_reg = 107,
+        .transaction_size = sizeof(byte),
+    };
+
+    // ret = i2c_write(i2c, &transaction, 0);
+    // if (ret < 0) {
+    //     goto exit;
+    // }
+
+    uint8_t byte_r;
+    transaction.read_data = &byte_r;
+    ret = i2c_read(i2c, &transaction, 0);
+    if (ret < 0) {
+        goto exit;
+    }
+    uprintf("i2c_read(): %.2x\r\n", byte_r);
+    byte_r = 0;
+    transaction.i2c_device_reg = 117;
+    ret = i2c_read(i2c, &transaction, 0);
+    if (ret < 0) {
+        goto exit;
+    }
+    uprintf("i2c_read(): %.2x\r\n", byte_r);
+
+    ret = E_SUCCESS;
+
+    exit:
+    return ret;
+}
+
+static const struct vez_shell_entry cmd_list[] = {
     {"help", help, "Show help"},
     {"?", help, "Show help"},
     {"hexdump", hexdump, "Dumps memory. Usage: dumpmem [hexaddr] [len]"},
     {"mpu6050", mpu6050, "Reads local acceleration using MPU6050 via I2C"},
     {"uda1380", uda1380, "Writes for ever using UDA1380 via I2S"},
+    {"i2c", i2c, "Reads one or two bytes from I2C"},
     {NULL, NULL, NULL}
 };
 
-static void process_line(char *line)
+void shell_task(void *arg)
 {
-    char *saveptr, *cmd, *argv[8];
-    int argc;
+    (void)arg;
 
-    // Extracts command name
-    cmd = strtok_r(line, " ", &saveptr);
-    if (cmd == NULL) return;
+    vez_shell_greeter(NULL);
 
-    // Extracts arguments
-    for(argc = 0; argc < 8; argc++) {
-        char *token = strtok_r(NULL, " ", &saveptr);
-        if (token == NULL) break;
-        argv[argc] = token;
+    while (1) {
+        vez_shell_iterate(cmd_list);
     }
-
-    // Looks for a command in the command list
-    for(int i = 0; cmd_list[i].cmd; i++) {
-        if(strcmp(cmd, cmd_list[i].cmd) == 0) {
-            int ret = cmd_list[i].fp(argc, argv);
-            if (ret) {
-                uprintf("Error executing command: %s\r\n", cmd);
-            }
-
-            return; // Found command. Executed (?) and now quit
-        }
-    }
-   uprintf("Command not foud: %s\r\n", cmd);
 }

@@ -4,3 +4,6 @@
 [submodule "arch/open407z"]
 	path = arch/open407z
 	url = git@github.com:cristovaozr/vez-arch-open407z.git
+[submodule "components/vez-shell"]
+	path = components/vez-shell
+	url = git@github.com:cristovaozr/vez-shell.git
