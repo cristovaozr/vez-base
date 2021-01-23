@@ -76,8 +76,8 @@ static int mpu6050(int argc, char **argv)
     }
 
     ret = mpu6050_init(i2c);
-    uprintf("mpu6050_init()==%d\r\n", ret);
-    uprintf("mpu6050_read_accel_info()==%d\r\n", ret);
+    uprintf("mpu6050_init()==%s\r\n", error_to_str(ret));
+    if (ret != E_SUCCESS) return -1;
 
     uprintf("Press 'q' to quit reading\r\n");
     while (1) {
@@ -150,15 +150,17 @@ static int i2c(int argc, char **argv)
 
     uint8_t byte_r;
     transaction.read_data = &byte_r;
-    ret = i2c_read(i2c, &transaction, 0);
+    ret = i2c_read(i2c, &transaction, 100);
     if (ret < 0) {
+        uprintf("i2c_read(): error: %s\r\n", error_to_str(ret));
         goto exit;
     }
     uprintf("i2c_read(): %.2x\r\n", byte_r);
     byte_r = 0;
     transaction.i2c_device_reg = 117;
-    ret = i2c_read(i2c, &transaction, 0);
+    ret = i2c_read(i2c, &transaction, 100);
     if (ret < 0) {
+        uprintf("i2c_read(): error: %s\r\n", error_to_str(ret));
         goto exit;
     }
     uprintf("i2c_read(): %.2x\r\n", byte_r);

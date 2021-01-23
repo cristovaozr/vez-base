@@ -1,3 +1,10 @@
+/**
+ * @author Cristóvão Zuppardo Rufino <cristovaozr@gmail.com>
+ * @version 0.1
+ *
+ * @copyright Copyright Cristóvão Zuppardo Rufino (c) 2021
+ * Please see LICENCE file to information regarding licensing
+ */
 #ifndef DRIVERS_MPU6050_MPU6050_DRIVER_H_
 #define DRIVERS_MPU6050_MPU6050_DRIVER_H_
 

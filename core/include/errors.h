@@ -39,4 +39,12 @@ enum errors {
     E_SUCCESS = 0,          /** Success */
 };
 
+/**
+ * @brief Converts an error number to its string equivalent
+ *
+ * @param error Error code
+ * @return A string representation of the error code
+ */
+extern const char *error_to_str(enum errors error);
+
 #endif // CORE_INCLUDE_ERRORS_H_

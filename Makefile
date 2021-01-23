@@ -52,7 +52,8 @@ C_SOURCES += \
 	core/src/device/pwm.c \
 	core/src/device/spi.c \
 	core/src/device/i2c.c \
-	core/sec/device/i2s.c
+	core/src/device/i2s.c \
+	core/errors.c
 
 # ulibc
 C_SOURCES += \

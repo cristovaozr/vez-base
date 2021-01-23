@@ -1,3 +1,10 @@
+/**
+ * @author Cristóvão Zuppardo Rufino <cristovaozr@gmail.com>
+ * @version 0.1
+ *
+ * @copyright Copyright Cristóvão Zuppardo Rufino (c) 2021
+ * Please see LICENCE file to information regarding licensing
+ */
 #include "drivers/mpu6050/mpu6050_driver.h"
 
 #include "include/device/i2c.h"
@@ -36,7 +43,7 @@ int32_t mpu6050_init(const struct i2c_device * const i2c)
         struct i2c_transaction transaction = {.i2c_device_addr = MPU6050_ADDRESS, .transaction_size = sizeof(uint8_t)};
         transaction.i2c_device_reg = config[i].mpu6050_reg;
         transaction.write_data = &config[i].value;
-        if ((ret = i2c_write(i2c, &transaction, 0)) < 0) goto exit;
+        if ((ret = i2c_write(i2c, &transaction, 100)) < 0) goto exit;
     }
     ret = E_SUCCESS;
 
@@ -55,17 +62,17 @@ int32_t mpu6050_read_gyro_info(const struct i2c_device * const i2c, struct mpu60
 
     transaction.i2c_device_reg = MPU6050_GYRO_X_AXIS;
     transaction.read_data = &axis->x_axis;
-    if ((ret = i2c_read(i2c, &transaction, 0)) < 0) goto exit;
+    if ((ret = i2c_read(i2c, &transaction, 100)) < 0) goto exit;
     axis->x_axis = REV16(axis->x_axis);
 
     transaction.i2c_device_reg = MPU6050_GYRO_Y_AXIS;
     transaction.read_data = &axis->y_axis;
-    if ((ret = i2c_read(i2c, &transaction, 0)) < 0) goto exit;
+    if ((ret = i2c_read(i2c, &transaction, 100)) < 0) goto exit;
     axis->y_axis = REV16(axis->y_axis);
 
     transaction.i2c_device_reg = MPU6050_GYRO_Z_AXIS;
     transaction.read_data = &axis->z_axis;
-    if ((ret = i2c_read(i2c, &transaction, 0)) < 0) goto exit;
+    if ((ret = i2c_read(i2c, &transaction, 100)) < 0) goto exit;
     axis->z_axis = REV16(axis->z_axis);
 
     ret = E_SUCCESS;
@@ -85,17 +92,17 @@ int32_t mpu6050_read_accel_info(const struct i2c_device * const i2c, struct mpu6
 
     transaction.i2c_device_reg = MPU6050_ACCEL_X_AXIS;
     transaction.read_data = &axis->x_axis;
-    if ((ret = i2c_read(i2c, &transaction, 0)) < 0) goto exit;
+    if ((ret = i2c_read(i2c, &transaction, 100)) < 0) goto exit;
     axis->x_axis = REV16(axis->x_axis);
 
     transaction.i2c_device_reg = MPU6050_ACCEL_Y_AXIS;
     transaction.read_data = &axis->y_axis;
-    if ((ret = i2c_read(i2c, &transaction, 0)) < 0) goto exit;
+    if ((ret = i2c_read(i2c, &transaction, 100)) < 0) goto exit;
     axis->y_axis = REV16(axis->y_axis);
 
     transaction.i2c_device_reg = MPU6050_ACCEL_Z_AXIS;
     transaction.read_data = &axis->z_axis;
-    if ((ret = i2c_read(i2c, &transaction, 0)) < 0) goto exit;
+    if ((ret = i2c_read(i2c, &transaction, 100)) < 0) goto exit;
     axis->z_axis = REV16(axis->z_axis);
 
     ret = E_SUCCESS;
