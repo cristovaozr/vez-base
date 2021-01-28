@@ -136,34 +136,24 @@ static int i2c(int argc, char **argv)
         goto exit;
     }
 
-    uint8_t byte = 0x18;
+    uint8_t byte[2];
     struct i2c_transaction transaction = {
-        .i2c_device_addr = 0x68,
-        .i2c_device_reg = 107,
+        .i2c_device_addr = 0x18,
         .transaction_size = sizeof(byte),
+        .read_data = &byte[0]
     };
 
-    // ret = i2c_write(i2c, &transaction, 0);
-    // if (ret < 0) {
-    //     goto exit;
-    // }
+    const uint8_t addrs[13] = {0x00, 0x01, 0x02, 0x03, 0x10, 0x11, 0x12, 0x13, 0x14, 0x20, 0x21, 0x22, 0x23};
 
-    uint8_t byte_r;
-    transaction.read_data = &byte_r;
-    ret = i2c_read(i2c, &transaction, 100);
-    if (ret < 0) {
-        uprintf("i2c_read(): error: %s\r\n", error_to_str(ret));
-        goto exit;
+    for (int i = 0; i < ARRAY_SIZE(addrs); i++) {
+        transaction.i2c_device_reg = addrs[i];
+        ret = i2c_read(i2c, &transaction, 10000);
+        if (ret < 0) {
+            uprintf("i2c_read(): error: %s\r\n", error_to_str(ret));
+            goto exit;
+        }
+        uprintf("i2c_read(): reg = %.2x: %.2x %.2x\r\n", addrs[i], byte[0], byte[1]);
     }
-    uprintf("i2c_read(): %.2x\r\n", byte_r);
-    byte_r = 0;
-    transaction.i2c_device_reg = 117;
-    ret = i2c_read(i2c, &transaction, 100);
-    if (ret < 0) {
-        uprintf("i2c_read(): error: %s\r\n", error_to_str(ret));
-        goto exit;
-    }
-    uprintf("i2c_read(): %.2x\r\n", byte_r);
 
     ret = E_SUCCESS;
 

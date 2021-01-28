@@ -66,33 +66,49 @@
         Register 0x03: 0000:0000:0000:0000 (0x0000) [Analog Mixer volume máximo]
 
         Register 0x13: 0000:0000:0000:0000
+
+    Default values as read using I2C
+        i2c_read(): reg = 00: 05 02
+        i2c_read(): reg = 01: 00 10
+        i2c_read(): reg = 02: 00 00
+        i2c_read(): reg = 03: 3f 3f
+        i2c_read(): reg = 10: 14 42
+        i2c_read(): reg = 11: 01 00
+        i2c_read(): reg = 12: ab 18
+        i2c_read(): reg = 13: 00 00
+        i2c_read(): reg = 14: 00 70
+        i2c_read(): reg = 20: 20 f0
+        i2c_read(): reg = 21: 00 0a
+        i2c_read(): reg = 22: 04 00
+        i2c_read(): reg = 23: 01 00
+
 */
 
-static const uint8_t uda1380_startup_sequence[5][3] = {
-    {UDA1380_REG_EVALCLK,           0x07, 0x12},
-    {UDA1380_REG_I2S,               0x00, 0x40},
-    {UDA1380_REG_PWRCTRL,           0x24, 0x0c},
-    {UDA1380_REG_ANAMIX,            0x00, 0x00},
-    {UDA1380_REG_MSTRMUTE,          0x00, 0x00}
-};
-
-// static const uint8_t uda1380_startup_sequence[14][3] = {
-//     {UDA1380_REG_PWRCTRL,     0xA5, 0xDF}, /** Enable all power for now */
-//     {UDA1380_REG_EVALCLK,     0x07, 0x00}, /** CODEC ADC and DAC clock from WSPLL, all clocks enabled. Configured for 8kHz */
-//     {UDA1380_REG_I2S,         0x00, 0x00}, /** I2S bus data I/O formats, use digital mixer for output BCKO is slave */
-//     {UDA1380_REG_ANAMIX,      0x00, 0x00}, /** Full mixer analog input gain */
-//     {UDA1380_REG_HEADAMP,     0x02, 0x02}, /** Enable headphone short circuit protection */
-//     {UDA1380_REG_MSTRVOL,     0x00, 0x00}, /** Full master volume */
-//     {UDA1380_REG_MIXVOL,      0x00, 0x00}, /** Enable full mixer volume on both channels */
-//     {UDA1380_REG_MODEBBT,     0x00, 0x00}, /** Bass and treble boost set to flat */
-//     {UDA1380_REG_MSTRMUTE,    0x00, 0x00}, /** Disable mute and de-emphasis */
-//     {UDA1380_REG_MIXSDO,      0x00, 0x00}, /** Mixer off, other settings off */
-
-//     {UDA1380_REG_DECVOL,      0x00, 0x00}, /** ADC decimator volume to max */
-//     {UDA1380_REG_PGA,         0x00, 0x00}, /** No PGA mute, full gain */
-//     {UDA1380_REG_ADC,         0x0f, 0x02}, /** Select line in and MIC, max MIC gain */
-//     {UDA1380_REG_AGC,         0x00, 0x00}, /** AGC */
+// static const uint8_t uda1380_startup_sequence[5][3] = {
+//     {UDA1380_REG_EVALCLK,           0x07, 0x12},
+//     {UDA1380_REG_I2S,               0x00, 0x40},
+//     {UDA1380_REG_PWRCTRL,           0x24, 0x0c},
+//     {UDA1380_REG_ANAMIX,            0x00, 0x00},
+//     {UDA1380_REG_MSTRMUTE,          0x00, 0x00}
 // };
+
+static const uint8_t uda1380_startup_sequence[14][3] = {
+    {UDA1380_REG_PWRCTRL,     0xA5, 0xDF}, /** Enable all power for now */
+    {UDA1380_REG_EVALCLK,     0x07, 0x00}, /** CODEC ADC and DAC clock from WSPLL, all clocks enabled. Configured for 8kHz */
+    {UDA1380_REG_I2S,         0x00, 0x00}, /** I2S bus data I/O formats, use digital mixer for output BCKO is slave */
+    {UDA1380_REG_ANAMIX,      0x00, 0x00}, /** Full mixer analog input gain */
+    {UDA1380_REG_HEADAMP,     0x02, 0x02}, /** Enable headphone short circuit protection */
+    {UDA1380_REG_MSTRVOL,     0x00, 0x00}, /** Full master volume */
+    {UDA1380_REG_MIXVOL,      0x00, 0x00}, /** Enable full mixer volume on both channels */
+    {UDA1380_REG_MODEBBT,     0x00, 0x00}, /** Bass and treble boost set to flat */
+    {UDA1380_REG_MSTRMUTE,    0x00, 0x00}, /** Disable mute and de-emphasis */
+    {UDA1380_REG_MIXSDO,      0x00, 0x00}, /** Mixer off, other settings off */
+
+    {UDA1380_REG_DECVOL,      0x00, 0x00}, /** ADC decimator volume to max */
+    {UDA1380_REG_PGA,         0x00, 0x00}, /** No PGA mute, full gain */
+    {UDA1380_REG_ADC,         0x0f, 0x02}, /** Select line in and MIC, max MIC gain */
+    {UDA1380_REG_AGC,         0x00, 0x00}, /** AGC */
+};
 
 int32_t uda1380_init(const struct i2c_device *i2c)
 {
@@ -106,23 +122,30 @@ int32_t uda1380_init(const struct i2c_device *i2c)
             .write_data = &uda1380_startup_sequence[i][1]
         };
 
-        ret = i2c_write(i2c, &transaction, 0);
-        if (ret < 0) goto exit;
+        ret = i2c_write(i2c, &transaction, 10000);
+        if (ret < 0) {
+            ERROR("uda1380", "i2c_write(): error: %s\r\n", error_to_str(ret));
+            goto exit;
+        }
     }
 
-    // for (int i = 0; i < ARRAY_SIZE(uda1380_startup_sequence); i++) {
-    //     uint8_t values[2];
-    //     struct i2c_transaction transaction = {
-    //         .i2c_device_addr = UDA1380_WRITE_ADDRESS,
-    //         .i2c_device_addr= uda1380_startup_sequence[i][0],
-    //         .transaction_size = 2,
-    //         .read_data = values
-    //     };
+    for (int i = 0; i < ARRAY_SIZE(uda1380_startup_sequence); i++) {
+        uint8_t values[2];
+        struct i2c_transaction transaction = {
+            .i2c_device_addr = UDA1380_WRITE_ADDRESS,
+            .i2c_device_reg = uda1380_startup_sequence[i][0],
+            .transaction_size = 2,
+            .read_data = &values[0]
+        };
 
-    //     ret = i2c_read(i2c, &transaction, 0);
-    //     if (ret < 0) goto exit;
-    //     DBG("uda1380", "Register %.2x=[%.2x %.2x]", uda1380_startup_sequence[i][0], values[0], values[1]);
-    // }
+        ret = i2c_read(i2c, &transaction, 10000);
+        if (ret < 0) {
+            ERROR("uda1380", "i2c_read(): error: %s\r\n", error_to_str(ret));
+            goto exit;
+        }
+        DBG("uda1380", "Register %.2x=[%.2x %.2x]", uda1380_startup_sequence[i][0], values[0], values[1]);
+    }
+    ret = E_SUCCESS;
 
     exit:
     return ret;
