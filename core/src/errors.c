@@ -19,6 +19,7 @@ const char *error_to_str(enum errors error)
         ERRSTR(E_INVALID_PARAMETER);
         ERRSTR(E_INVALID_HARDWARE);
         ERRSTR(E_HARDWARE_CONFIG_FAILED);
+        ERRSTR(E_DEVICE_NOT_FOUND);
 
         /***** PWM Related errors *****/
         ERRSTR(E_INVALID_DUTY_CYCLE);

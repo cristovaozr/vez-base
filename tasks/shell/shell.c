@@ -31,6 +31,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define TAG "shell"
+
 static const struct vez_shell_entry cmd_list[];
 
 /**
@@ -71,12 +73,12 @@ static int mpu6050(int argc, char **argv)
     int32_t ret;
     const struct i2c_device *i2c = device_get_by_name("i2c1");
     if (i2c == NULL) {
-        uprintf("Could not get I2C device\r\n");
+        ERROR(TAG, "Could not get I2C device");
         return -1;
     }
 
     ret = mpu6050_init(i2c);
-    uprintf("mpu6050_init()==%s\r\n", error_to_str(ret));
+    DBG(TAG, "mpu6050_init()==%s", error_to_str(ret));
     if (ret != E_SUCCESS) return -1;
 
     uprintf("Press 'q' to quit reading\r\n");
@@ -102,17 +104,20 @@ static int uda1380(int argc, char **argv)
     const struct i2s_device *i2s3 = device_get_by_name("i2s3");
 
     if (i2c == NULL) {
-        uprintf("Could not get I2C device\r\n");
-        return -1;
+        ERROR(TAG, "Could not get I2C device");
+        ret = E_DEVICE_NOT_FOUND;
+        goto exit;
     }
     if (i2s3 == NULL) {
-        uprintf("Could not get I2S device\r\n");
-        return -1;
+        ERROR(TAG, "Could not get I2S device");
+        ret = E_DEVICE_NOT_FOUND;
+        goto exit;
     }
 
     ret = uda1380_init(i2c);
     if (ret < 0) {
-        return -1;
+        ERROR(TAG, "Error configuring UDA1380:%s", error_to_str(ret));
+        goto exit;
     }
 
     const float w = 2.0f * M_PI * 1000.0f / 8000.0f;
@@ -122,7 +127,8 @@ static int uda1380(int argc, char **argv)
         uda1380_write_blocking(i2s3, sample.u, sample.u);
     }
 
-    return 0;
+    exit:
+    return ret;
 }
 
 static int i2c(int argc, char **argv)
@@ -131,28 +137,9 @@ static int i2c(int argc, char **argv)
 
     const struct i2c_device *i2c = device_get_by_name("i2c1");
     if (i2c == NULL) {
-        uprintf("Could not obtain I2C device\r\n");
+        ERROR(TAG, "Could not obtain I2C device");
         ret = -1;
         goto exit;
-    }
-
-    uint8_t byte[2];
-    struct i2c_transaction transaction = {
-        .i2c_device_addr = 0x18,
-        .transaction_size = sizeof(byte),
-        .read_data = &byte[0]
-    };
-
-    const uint8_t addrs[13] = {0x00, 0x01, 0x02, 0x03, 0x10, 0x11, 0x12, 0x13, 0x14, 0x20, 0x21, 0x22, 0x23};
-
-    for (int i = 0; i < ARRAY_SIZE(addrs); i++) {
-        transaction.i2c_device_reg = addrs[i];
-        ret = i2c_read(i2c, &transaction, 10000);
-        if (ret < 0) {
-            uprintf("i2c_read(): error: %s\r\n", error_to_str(ret));
-            goto exit;
-        }
-        uprintf("i2c_read(): reg = %.2x: %.2x %.2x\r\n", addrs[i], byte[0], byte[1]);
     }
 
     ret = E_SUCCESS;
@@ -162,16 +149,16 @@ static int i2c(int argc, char **argv)
 }
 
 static const struct vez_shell_entry cmd_list[] = {
-    {"help", help, "Show help"},
-    {"?", help, "Show help"},
+    {"help",    help, "Show help"},
+    {"?",       help, "Show help"},
     {"hexdump", hexdump, "Dumps memory. Usage: dumpmem [hexaddr] [len]"},
     {"mpu6050", mpu6050, "Reads local acceleration using MPU6050 via I2C"},
     {"uda1380", uda1380, "Writes for ever using UDA1380 via I2S"},
-    {"i2c", i2c, "Reads one or two bytes from I2C"},
+    {"i2c",     i2c, "Reads one or two bytes from I2C"},
     {NULL, NULL, NULL}
 };
 
-void shell_task(void *arg)
+static void shell_task(void *arg)
 {
     (void)arg;
 
@@ -180,4 +167,13 @@ void shell_task(void *arg)
     while (1) {
         vez_shell_iterate(cmd_list);
     }
+}
+
+#define SHELL_TASK_SIZE 256
+static StackType_t shell_stack[SHELL_TASK_SIZE];
+static StaticTask_t shell_tcb;
+
+void declare_shell_task(void)
+{
+    xTaskCreateStatic(shell_task, "shell", SHELL_TASK_SIZE, NULL, tskIDLE_PRIORITY, shell_stack, &shell_tcb);
 }

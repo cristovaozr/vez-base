@@ -23,6 +23,7 @@ enum errors {
     E_INVALID_PARAMETER,    /** Invalid parameter */
     E_INVALID_HARDWARE,     /** Invalid hardware detected */
     E_HARDWARE_CONFIG_FAILED, /** Hardware configuration failure */
+    E_DEVICE_NOT_FOUND,     /** Requested device not found */
 
     /***** PWM Related errors *****/
     E_INVALID_DUTY_CYCLE,   /** Duty cycle does not comply */

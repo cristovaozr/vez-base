@@ -22,8 +22,8 @@ void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackTy
     *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
 }
 
-extern void blinky(void *);
-extern void shell_task(void *);
+extern void declare_blinky_task(void);
+extern void declare_shell_task(void);
 /**
   * @brief  FreeRTOS initialization
   * @param  None
@@ -31,19 +31,6 @@ extern void shell_task(void *);
   */
 void MX_FREERTOS_Init(void)
 {
-    xTaskCreate(
-        blinky,
-        "blinky",
-        configMINIMAL_STACK_SIZE,
-        NULL,
-        tskIDLE_PRIORITY,
-        NULL);
-    
-    xTaskCreate(
-        shell_task,
-        "shell",
-        256,
-        NULL,
-        tskIDLE_PRIORITY,
-        NULL);
+    declare_blinky_task();
+    declare_shell_task();
 }

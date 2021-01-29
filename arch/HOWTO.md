@@ -23,24 +23,26 @@ Para compilar uma plataforma os seguintes arquivos devem existir:
 | Arquivo | Explicação |
 |---|---|
 | Inicialização de hardware | Implementa a API definida no arquivo `${VEZ-BASE}/core/include/hw_init.h`. Normalmente as plataformas nomeiam esse arquivo `hw_init.c` |
-| Arquivo de exportação de dispositivos | Deve ser chamado `include/exported.h` e deve conter todos os objetos, structs, etc. que implementam quaisquer interfaces da API de devices. Todos os objetos que são exportados devem ser marcados com a tag `EXPORTED` disponível em `${VEZ-BASE}/include/utils.h`
+| Arquivo de implementação de devices | Implementa a API definida no arquivo `${VEZ-BASE}/core/include/device/device.h` e implementa a função `const void * device_get_by_name(const char *dev_name)`
 
 # Hardware mínimo que deve estar disponível
 
-Para a compilação atual do projeto é necessário haver pelo menos dois símbolos disponíveis em `include/exported.h`:
+Devem haver os seguintes dispositivos definidos:
+* `DEFAULT_USART`
+* `DEFAULT_LED`
 
 ```c
+#include "include/device/device.h"
+
 // Um GPIO (normalmente atribuído a um LED) para a task blinky
-extern const struct gpio_device red_led;
+const struct gpio_device *led = device_get_by_name(DEFAULT_LED);
 
 // Uma USART para a task shell
-extern const struct usart_device usart2;
+const struct usart_device *usart = device_get_by_name(DEFAULT_USART);
 ```
 
 # Coisas pendentes
 
 As seguintes pendências ainda não estão resolvidas para desacoplamento completo das plataformas com o projeto base:
 
-* Desvincular a dependência da task blink de um objeto "red_led";
-* Desvincular a dependência da task shell de um objeto "usart2";
 * Criar uma plataforma "vazia" que permita a compilação do projeto sem necessitar a importação de uma plataforma para o projeto.

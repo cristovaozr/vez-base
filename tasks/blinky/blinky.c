@@ -14,7 +14,7 @@
 #include "include/device/device.h"
 #include "include/device/gpio.h"
 
-void blinky(void *arg)
+static void blinky(void *arg)
 {
     (void)arg;
     const struct gpio_device *gpio = device_get_by_name("led_gpio");
@@ -27,4 +27,12 @@ void blinky(void *arg)
         gpio_toggle(gpio);
         vTaskDelay(250);
     }
+}
+
+static StackType_t blinky_stack[configMINIMAL_STACK_SIZE];
+static StaticTask_t blinky_tcb;
+
+void declare_blinky_task(void)
+{
+    xTaskCreateStatic(blinky, "blinky", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, blinky_stack, &blinky_tcb);
 }
