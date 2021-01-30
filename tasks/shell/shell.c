@@ -142,6 +142,71 @@ static int i2c(int argc, char **argv)
         goto exit;
     }
 
+    // i2c w [hex-addr] [hex-reg] [hexvalue]
+    // i2c r [hex-addr] [hex-reg] [size]
+
+    char op_type = argv[0][0];
+    uint8_t dev_addr = strtoul(argv[1], NULL, 16);
+    uint8_t dev_reg = strtoul(argv[2], NULL, 16);
+
+    switch(op_type) {
+        case 'r':
+        case 'R': {
+            uint32_t size = strtoul(argv[3], NULL, 10);
+            uint8_t data[2];
+            if (size > sizeof(data)) {
+                ret = E_INVALID_PARAMETER;
+                goto exit;
+            }
+
+            struct i2c_transaction transaction = {
+                .i2c_device_addr = dev_addr,
+                .i2c_device_reg = dev_reg,
+                .transaction_size = size,
+                .read_data = &data[0]
+            };
+
+            if ((ret = i2c_read(i2c, &transaction, 10000)) < 0) goto exit;
+            uprintf("Data read: ");
+            for (uint32_t i = 0; i < size; uprintf("%.2x ", data[i++]));
+            uprintf("\r\n");
+        }
+            break;
+
+        case 'w':
+        case 'W': {
+            uint8_t data[2];
+            uint32_t size = strlen(argv[3]);
+            if ((size % 2) != 0) {
+                ret = E_INVALID_PARAMETER;
+                goto exit;
+            }
+            if (size/2 > sizeof(data)) {
+                ret = E_INVALID_PARAMETER;
+                goto exit;
+            }
+
+            for (int i = 0; i < size; i+=2) {
+                char value[3] = {argv[3][0], argv[3][1], '\0'};
+                data[i/2] = strtoul(value, NULL, 16);
+            }
+
+            struct i2c_transaction transaction = {
+                .i2c_device_addr = dev_addr,
+                .i2c_device_reg = dev_reg,
+                .transaction_size = size/2,
+                .write_data = &data[0]
+            };
+
+            if ((ret = i2c_write(i2c, &transaction, 10000)) < 0) goto exit;
+        }
+            break;
+
+        default:
+            ret = E_INVALID_PARAMETER;
+            goto exit;
+    }
+
     ret = E_SUCCESS;
 
     exit:
@@ -154,7 +219,7 @@ static const struct vez_shell_entry cmd_list[] = {
     {"hexdump", hexdump, "Dumps memory. Usage: dumpmem [hexaddr] [len]"},
     {"mpu6050", mpu6050, "Reads local acceleration using MPU6050 via I2C"},
     {"uda1380", uda1380, "Writes for ever using UDA1380 via I2S"},
-    {"i2c",     i2c, "Reads one or two bytes from I2C"},
+    {"i2c",     i2c, "Reads/write to/from an I2C device"},
     {NULL, NULL, NULL}
 };
 
