@@ -11,6 +11,7 @@
 
 #include "include/device/device.h"
 #include "include/device/spi.h"
+#include "include/device/i2c.h"
 #include "include/device/transaction.h"
 
 #include "core/include/errors.h"
@@ -22,8 +23,6 @@
 #include "drivers/nrf24l01p/nrf24l01p.h"
 #include "drivers/mpu6050/mpu6050_driver.h"
 #include "drivers/uda1380/uda1380_driver.h"
-
-#include "include/device/i2c.h"
 
 #include "components/vez-shell/include/vez-shell.h"
 
@@ -213,6 +212,43 @@ static int i2c(int argc, char **argv)
     return ret;
 }
 
+static int spi(int argc, char **argv)
+{
+    int32_t ret = E_SUCCESS;
+    const uint8_t original[8] = {'l','o','o','p','b','a','c','k'};
+    uint8_t copy[8];
+
+    const struct spi_device *spi = device_get_by_name("spi1");
+    if (spi == NULL) {
+        ret = E_DEVICE_NOT_FOUND;
+        goto exit;
+    }
+
+    uprintf("Testing loopback for SPI\r\n");
+    struct spi_transaction transaction = {
+        .write_size = sizeof(original),
+        .write_data = &original[0],
+        .read_size = sizeof(copy),
+        .read_data = &copy[0]
+    };
+
+    uint32_t size = CHOOSE_MIN(sizeof(original), sizeof(copy));
+
+    if ((ret = spi_transact(spi, &transaction, 0)) < 0) {
+        goto exit;
+    }
+
+    if (memcmp(original, copy, size) == 0) {
+        uprintf("Data sent == data received\r\n");
+    } else {
+        uprintf("Something odd happened! Data sent != data received\r\n");
+        HEXDUMP(copy, sizeof(copy));
+    }
+
+    exit:
+    return ret;
+}
+
 static const struct vez_shell_entry cmd_list[] = {
     {"help",    help, "Show help"},
     {"?",       help, "Show help"},
@@ -220,6 +256,7 @@ static const struct vez_shell_entry cmd_list[] = {
     {"mpu6050", mpu6050, "Reads local acceleration using MPU6050 via I2C"},
     {"uda1380", uda1380, "Writes for ever using UDA1380 via I2S"},
     {"i2c",     i2c, "Reads/write to/from an I2C device"},
+    {"spi",     spi, "Tests SPI loopback"},
     {NULL, NULL, NULL}
 };
 
