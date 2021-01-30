@@ -18,7 +18,9 @@ vez-base/
  |     `--- shell/
  +--- tasks/
  |
- `--- ulibc
+ +--- ulibc
+ |
+  `-- drivers/
 ```
 
 ## "arch" folder
@@ -44,5 +46,9 @@ Contains source-code for the tasks that run on FreeRTOS.
 ## "ulibc" folder
 
 Contains source-code for a C library that I use in embedded projects. I have been having some issues using functions such as `printf()` in previous projects. As long as I don't find out how to use these functions they are implemented here.
+
+## "drivers" folder
+
+Contais source-code for devices and uses the API defined in "core". Therefore all drivers here can be used in any platform.
 
 This project depends on `newlib` and links against the `newlib-nano` C library for functions that are not defined here. There is also some logging functions available in `log.h` and `log.c`.

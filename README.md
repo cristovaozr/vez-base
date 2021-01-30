@@ -18,7 +18,9 @@ vez-base/
  |     `--- shell/
  +--- tasks/
  |
- `--- ulibc
+ +--- ulibc
+ |
+  `-- drivers/
 ```
 
 ## Pasta "arch"
@@ -44,5 +46,9 @@ Possui os códigos-fonte das tasks que executam no FreeRTOS.
 ## Pasta "ulibc"
 
 Possui os códigos-fonte para uma biblioteca C para uso em projetos de sistemas embarcados. Eu tive muita dificuldade com funções `printf()` que chegavam a causar travamentos no microcontrolador. Enquanto eu não descobrir como usar essas funções elas estão implementadas aqui.
+
+## Pasta "drivers"
+
+Possui código-fonte para dispositivos e utiliza a API definida em "core". Portanto os drivers aqui podem ser usados em qualquer plataforma.
 
 O projeto depende da `newlib` e faz link contra a `newlib-nano` para funções que não estão definidas aqui. Há também um sistema de logging pertencente em `log.h` e `log.c`.
