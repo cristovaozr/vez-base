@@ -18,4 +18,10 @@
 /** Reverts 32 bits values */
 #define REV32(x) (uint32_t)(((x) & 0xff000000) >> 24 | ((x) & 0xff0000) >> 8 | ((x) & 0xff00) << 8 | ((x) & 0xff) << 24)
 
+/** Retreives the maximum of two integers */
+#define CHOOSE_MAX(x, y) ((x)>(y)?(x):(y))
+
+/** Retreives the minimum of two integers */
+#define CHOOSE_MIN(x, y) ((x)>(y)?(y):(x))
+
 #endif // ULIBC_INCLUDE_UTILS_H_

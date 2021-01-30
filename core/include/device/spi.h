@@ -43,13 +43,25 @@ struct spi_operations {
     /**
      * @brief Writes at most [size] bytes from [data] to the SPI. Negative return means error.
      * @param spi SPI device
-     * @param data Data to write to SPI
      * @param size Size in bytes to be written to SPI
+     * @param data Data to write to SPI
      * @param timeout Amount of time, in ms, for timeout
      *
      * @return Amount of data written. Negative on error.
      */
     int32_t     (*spi_write_op)(const struct spi_device * const spi, uint32_t size, const void *data, uint32_t timeout);
+
+    /**
+     * @brief Reads at most [size] bytes to [data] from the SPI. Negative return means error.
+     *
+     * @param spi SPI Device
+     * @param size Size in bytes to be read from SPI
+     * @param data [out] Data to be read
+     * @param timeout Amount of time, in ms, for timeout
+     *
+     * @return Amount of data read. Negative on error.
+     */
+    int32_t     (*spi_read_op)(const struct spi_device * const spi, uint32_t size, void *data, uint32_t timeout);
 
     /**
      * @brief Executes a transaction (write followed by a read) on SPI.

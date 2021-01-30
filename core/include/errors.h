@@ -17,8 +17,8 @@
 
 enum errors {
     /***** Generic device error *****/
-    E_NOTINIT = INT32_MIN,  /** Did not init device */
-    E_POLLOPINVALID,        /** Selected poll_op is not valid */
+    E_NOT_INITIALIZED = INT32_MIN,  /** Did not init device */
+    E_POLLOP_INVALID,        /** Selected poll_op is not valid */
     E_TIMEOUT,              /** Timeout event */
     E_INVALID_PARAMETER,    /** Invalid parameter */
     E_INVALID_HARDWARE,     /** Invalid hardware detected */

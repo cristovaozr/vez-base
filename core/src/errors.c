@@ -13,8 +13,8 @@
 const char *error_to_str(enum errors error)
 {
     switch (error) {
-        ERRSTR(E_NOTINIT);
-        ERRSTR(E_POLLOPINVALID);
+        ERRSTR(E_NOT_INITIALIZED);
+        ERRSTR(E_POLLOP_INVALID);
         ERRSTR(E_TIMEOUT);
         ERRSTR(E_INVALID_PARAMETER);
         ERRSTR(E_INVALID_HARDWARE);

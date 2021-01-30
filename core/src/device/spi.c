@@ -15,6 +15,11 @@ int32_t spi_write(const struct spi_device * const spi, uint32_t size, const void
     return spi->ops->spi_write_op(spi, size, data, timeout);
 }
 
+int32_t spi_read(const struct spi_device * const spi, uint32_t size, void *data, uint32_t timeout)
+{
+    return spi->ops->spi_read_op(spi, size, data, timeout);
+}
+
 int32_t spi_transact(const struct spi_device * const spi, struct spi_transaction * const transaction, uint32_t timeout)
 {
     return spi->ops->spi_transact_op(spi, transaction, timeout);

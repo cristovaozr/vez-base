@@ -15,8 +15,9 @@
  * @brief Defines a SPI transaction
  */
 struct spi_transaction {
-    uint32_t transaction_size;
+    uint32_t write_size;
     const void *write_data;
+    uint32_t read_size;
     void *read_data;
 };
 
