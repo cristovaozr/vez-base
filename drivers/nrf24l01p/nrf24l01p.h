@@ -18,6 +18,7 @@
 struct nrf24l01p {
     const struct spi_device * const spi_device;
     const struct gpio_device * const ce_gpio;
+    const struct gpio_device * const cs_gpio;
 };
 
 /**

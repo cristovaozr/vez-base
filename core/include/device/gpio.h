@@ -55,6 +55,9 @@ struct gpio_operations {
  * API Definition
  */
 
+#define GPIO_LOW    0
+#define GPIO_HIGH   !GPIO_LOW
+
 /**
  * @brief Writes a value to GPIO
  *

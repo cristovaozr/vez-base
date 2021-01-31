@@ -249,6 +249,20 @@ static int spi(int argc, char **argv)
     return ret;
 }
 
+static int nrf24l01p(int argc, char **argv)
+{
+
+    struct nrf24l01p nrf = {
+        .spi_device = device_get_by_name("spi1"),
+        .ce_gpio = device_get_by_name("nrf24l01p_ce"),
+        .cs_gpio = device_get_by_name("spi1_cs")
+    };
+
+    nrf24l01p_default_setup(&nrf);
+
+    return E_SUCCESS;
+}
+
 static const struct vez_shell_entry cmd_list[] = {
     {"help",    help, "Show help"},
     {"?",       help, "Show help"},
@@ -257,6 +271,7 @@ static const struct vez_shell_entry cmd_list[] = {
     {"uda1380", uda1380, "Writes for ever using UDA1380 via I2S"},
     {"i2c",     i2c, "Reads/write to/from an I2C device"},
     {"spi",     spi, "Tests SPI loopback"},
+    {"nrf24l01p", nrf24l01p, "Configures nRF24L01+"},
     {NULL, NULL, NULL}
 };
 

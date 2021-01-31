@@ -15,6 +15,7 @@
 #include "include/errors.h"
 
 #include "ulibc/include/utils.h"
+#include "ulibc/include/log.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -22,11 +23,15 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#define DEFAULT_TIMEOUT 0
+
+#define TAG "nrf24l01p"
+
 #define ADDR_NOT_VALID(x) ((x) > 0x1d || ((x) >= 0x18 && (x) <= 0x1b))
 
 static int32_t r_register(const struct nrf24l01p * const device, uint8_t addr, uint32_t size, void * const out)
 {
-    int32_t ret = E_SUCCESS;
+    int32_t ret;
     // 1 byte for address, 1 byte for status, up to 5 bytes for data read
     uint8_t payload_in[1 + 5] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
     uint8_t payload_out[1 + 5] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
@@ -43,14 +48,16 @@ static int32_t r_register(const struct nrf24l01p * const device, uint8_t addr, u
 
     payload_out[0] = addr;
     struct spi_transaction transaction = {
-        // .transaction_size = 1 + size,
+        .write_size = 1 + size,
         .write_data = payload_out,
-        .read_data = payload_in
+        .read_size = 1 + size,
+        .read_data = payload_in,
     };
 
-    if ((ret = spi_transact(device->spi_device, &transaction, 0)) < 0) {
-        goto exit;
-    }
+    gpio_write(device->cs_gpio, GPIO_LOW);
+    ret = spi_transact(device->spi_device, &transaction, DEFAULT_TIMEOUT);
+    gpio_write(device->cs_gpio, GPIO_HIGH);
+    if (ret < 0) { goto exit; }
     // Copies data including status register
     memcpy(out, &payload_in[1], size);
 
@@ -76,11 +83,11 @@ static int32_t w_register(const struct nrf24l01p * const device, uint8_t addr, u
     payload[0] = 0x20 | addr;
     memcpy(&payload[1], reg, size);
 
-    // TODO: In the future when this function returns timeout return here
-    ret = spi_write(device->spi_device, 1 + size, payload, 0);
-    if (ret >= 0) {
-        ret = E_SUCCESS;
-    }
+    gpio_write(device->cs_gpio, GPIO_LOW);
+    ret = spi_write(device->spi_device, 1 + size, payload, DEFAULT_TIMEOUT);
+    gpio_write(device->cs_gpio, GPIO_HIGH);
+    if (ret < 0) { goto exit; }
+    ret = E_SUCCESS;
 
     exit:
     return ret;
@@ -92,20 +99,25 @@ static int32_t read_modify_write(const struct nrf24l01p * const device, uint8_t 
     uint8_t read_reg[2] = {reg, 0xff}, reg_value[2];
     struct spi_transaction transaction = {
         // .transaction_size = 2,
+        .write_size = sizeof(read_reg),
         .write_data = &read_reg,
+        .read_size = sizeof(reg_value),
         .read_data = reg_value
     };
 
-    ret = spi_transact(device->spi_device, &transaction, 0);
-    if (ret < 0) {
-        goto exit;
-    }
+    gpio_write(device->cs_gpio, GPIO_LOW);
+    ret = spi_transact(device->spi_device, &transaction, DEFAULT_TIMEOUT);
+    gpio_write(device->cs_gpio, GPIO_HIGH);
+    if (ret < 0) { goto exit; }
 
     reg_value[1] &= ~clear_mask;
     reg_value[1] |= set_mask;
     uint8_t write_reg[2] = {reg | 0x20, reg_value[1]};
-    ret = spi_write(device->spi_device, sizeof(write_reg), write_reg, 0);
-    if (ret > 0) { ret = E_SUCCESS; }
+    gpio_write(device->cs_gpio, GPIO_LOW);
+    ret = spi_write(device->spi_device, sizeof(write_reg), write_reg, DEFAULT_TIMEOUT);
+    gpio_write(device->cs_gpio, GPIO_HIGH);
+    if (ret < 0) { goto exit; }
+    ret = E_SUCCESS;
 
     exit:
     return ret;
@@ -114,9 +126,8 @@ static int32_t read_modify_write(const struct nrf24l01p * const device, uint8_t 
 int32_t nrf24l01p_default_setup(const struct nrf24l01p * const device)
 {
     int32_t ret;
-    const struct configuration {
-        uint8_t reg; uint8_t config;
-    } configuration[7] = {
+    struct configuration { uint8_t reg; uint8_t config; };
+    const struct configuration configuration[7] = {
         {NRF24L01P_REG_CONFIG,      CONFIG_MASK_RX_DR | CONFIG_MASK_TX_DS | CONFIG_MASK_MAX_RT | CONFIG_PRIM_RX},
         {NRF24L01P_REG_EN_AA,       0x00},
         {NRF24L01P_REG_EN_RXADDR,   EN_RXADDR_ERX_P1 | EN_RXADDR_ERX_P0},
@@ -129,9 +140,18 @@ int32_t nrf24l01p_default_setup(const struct nrf24l01p * const device)
     gpio_write(device->ce_gpio, 0);
 
     for (int i = 0; i < ARRAY_SIZE(configuration); i++) {
+        DBG(TAG, "Writing register [%.2x] with value [%.2x]", configuration[i].reg, configuration[i].config);
         ret = w_register(device, configuration[i].reg, 1, &configuration[i].config);
-        if (ret < 0) {
-            goto exit;
+        if (ret < 0) { goto exit; }
+    }
+
+    for (int i = 0; i < ARRAY_SIZE(configuration); i++) {
+        uint8_t value;
+        DBG(TAG, "Checking configuration on register [%.2x]", configuration[i].reg);
+        ret = r_register(device, configuration[i].reg, 1, &value);
+        if (ret < 0) { goto exit; }
+        if (value != configuration[i].config) {
+            ERROR(TAG, "Configuration mismatch! Should be [%.2x] but read [%.2x]", configuration[i].config, value);
         }
     }
 
@@ -251,16 +271,15 @@ int32_t nrf24l01p_r_rx_payload(const struct nrf24l01p * const device, uint32_t s
         goto exit;
     }
     struct spi_transaction transaction = {
-        // .transaction_size = 1 + size,
+        .write_size = 1 + size,
         .write_data = data_to_write,
+        .read_size = 1 + size,
         .read_data = data_to_read
     };
+
     if ((ret = spi_transact(device->spi_device, &transaction, 0)) < 0) { goto exit; }
     memcpy(data, &data_to_read[1], size);
-    if (ret > 0) {
-        ret = E_SUCCESS;
-        goto exit;
-    }
+    ret = E_SUCCESS;
 
     exit:
     return ret;
@@ -289,8 +308,7 @@ int32_t ret;
 void nrf24l01p_transmit(const struct nrf24l01p * const device)
 {
     gpio_write(device->ce_gpio, 1);
-    // FIXME: wait 10µs instead of 1ms
-    vTaskDelay(1);
+    vTaskDelay(1); // FIXME: wait 10µs instead of 1ms
     gpio_write(device->ce_gpio, 0);
 }
 
