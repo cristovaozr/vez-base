@@ -23,6 +23,8 @@
 #include "drivers/nrf24l01p/nrf24l01p.h"
 #include "drivers/mpu6050/mpu6050_driver.h"
 #include "drivers/uda1380/uda1380_driver.h"
+#include "drivers/sdcard/sdcard.h"
+#include "drivers/sdcard/sdcard_spi_impl.h"
 
 #include "components/vez-shell/include/vez-shell.h"
 
@@ -30,7 +32,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define TAG "shell"
+#define TAG "SHELL"
 
 static const struct vez_shell_entry cmd_list[];
 
@@ -263,6 +265,59 @@ static int nrf24l01p(int argc, char **argv)
     return E_SUCCESS;
 }
 
+static int sdcard(int argc, char **argv)
+{
+    const struct sdcard_spi_priv priv = {
+        .spi = device_get_by_name("spi1"),
+        .cs = device_get_by_name("spi1_cs")
+    };
+    const struct sdcard sdcard = {
+        .priv = &priv
+    };
+    uint8_t block[512];
+
+    int32_t ret = sdcard_init(&sdcard);
+    DBG("SHELL", "sdcard_init(): %s", error_to_str(ret));
+    if (ret < 0) goto exit;
+
+    ret = sdcard_read_block(&sdcard, 0, block);
+    DBG("SHELL", "sdcard_read_block(): %s", error_to_str(ret));
+    if (ret < 0) goto exit;
+    DBG("SHELL", "Amount read: %d", ret);
+    HEXDUMP(block, sizeof(block));
+
+    exit:
+    return E_SUCCESS;
+}
+
+static int sdwrite(int argc, char **argv)
+{
+    uint8_t garbage = strtol(argv[0], NULL, 16);
+    DBG("SHELL", "Writing %.2x on SDCARD block 0", garbage);
+    uint8_t block[512];
+    memset(block, garbage, sizeof(block));
+
+    const struct sdcard_spi_priv priv = {
+        .spi = device_get_by_name("spi1"),
+        .cs = device_get_by_name("spi1_cs")
+    };
+    const struct sdcard sdcard = {
+        .priv = &priv
+    };
+
+    int32_t ret = sdcard_init(&sdcard);
+    DBG("SHELL", "sdcard_init(): %s", error_to_str(ret));
+    if (ret < 0) goto exit;
+
+    ret = sdcard_write_block(&sdcard, 0, block);
+    DBG("SHELL", "sdcard_write_block(): %s", error_to_str(ret));
+    if (ret < 0) goto exit;
+    DBG("SHELL", "Amount written: %d", ret);
+
+    exit:
+    return E_SUCCESS;
+}
+
 static const struct vez_shell_entry cmd_list[] = {
     {"help",    help, "Show help"},
     {"?",       help, "Show help"},
@@ -272,6 +327,8 @@ static const struct vez_shell_entry cmd_list[] = {
     {"i2c",     i2c, "Reads/write to/from an I2C device"},
     {"spi",     spi, "Tests SPI loopback"},
     {"nrf24l01p", nrf24l01p, "Configures nRF24L01+"},
+    {"sdcard",  sdcard, "Tests SDCARD implementation"},
+    {"sdwrite", sdwrite, "Writes garbage on SDCARD block 0"},
     {NULL, NULL, NULL}
 };
 
@@ -286,7 +343,7 @@ static void shell_task(void *arg)
     }
 }
 
-#define SHELL_TASK_SIZE 256
+#define SHELL_TASK_SIZE 384
 static StackType_t shell_stack[SHELL_TASK_SIZE];
 static StaticTask_t shell_tcb;
 

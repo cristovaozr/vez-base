@@ -36,6 +36,7 @@ enum errors {
     E_RX_QUEUE_EMPTY,       /** RX queue empty */
 
     /***** Generic error codes *****/
+    E_INVALID_CRC,          /** Invalid CRC */
     E_UNIMPEMENTED,         /** Function not implemented yet */
     E_SUCCESS = 0,          /** Success */
 };

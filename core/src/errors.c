@@ -32,6 +32,7 @@ const char *error_to_str(enum errors error)
         ERRSTR(E_RX_QUEUE_EMPTY);
 
         /***** Generic error codes *****/
+        ERRSTR(E_INVALID_CRC);
         ERRSTR(E_UNIMPEMENTED);
         ERRSTR(E_SUCCESS);
         default: return "UNKNOWN";

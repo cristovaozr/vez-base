@@ -69,7 +69,15 @@ C_SOURCES += \
 C_SOURCES += \
 	drivers/nrf24l01p/nrf24l01p.c \
 	drivers/mpu6050/mpu6050_driver.c \
-	drivers/uda1380/uda1380_driver.c
+	drivers/uda1380/uda1380_driver.c \
+	drivers/sdcard/sdcard_common.c \
+	drivers/sdcard/sdcard_spi_impl.c
+
+# Libs
+C_SOURCES += \
+	libs/crc7/crc7.c \
+	libs/crc8/crc8.c \
+	libs/crc16/crc16.c
 
 # Components
 C_SOURCES += \

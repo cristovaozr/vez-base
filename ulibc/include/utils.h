@@ -24,4 +24,15 @@
 /** Retreives the minimum of two integers */
 #define CHOOSE_MIN(x, y) ((x)>(y)?(y):(x))
 
+/** Checks whether a bit is set */
+#define IS_BIT_SET(x, y) ((x) & (y))
+
+/** Checks whether a bit is clear */
+#define IS_BIT_CLEAR(x, y) !((x) & (y))
+
+#ifndef FALSE
+#define FALSE 0     /** Definition of false */
+#define TRUE !FALSE /** Definition of true */
+#endif
+
 #endif // ULIBC_INCLUDE_UTILS_H_
