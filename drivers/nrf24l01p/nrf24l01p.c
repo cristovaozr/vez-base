@@ -84,7 +84,7 @@ static int32_t w_register(const struct nrf24l01p * const device, uint8_t addr, u
     memcpy(&payload[1], reg, size);
 
     gpio_write(device->cs_gpio, GPIO_LOW);
-    ret = spi_write(device->spi_device, 1 + size, payload, DEFAULT_TIMEOUT);
+    ret = spi_write(device->spi_device, payload, 1 + size, DEFAULT_TIMEOUT);
     gpio_write(device->cs_gpio, GPIO_HIGH);
     if (ret < 0) { goto exit; }
     ret = E_SUCCESS;
@@ -114,7 +114,7 @@ static int32_t read_modify_write(const struct nrf24l01p * const device, uint8_t 
     reg_value[1] |= set_mask;
     uint8_t write_reg[2] = {reg | 0x20, reg_value[1]};
     gpio_write(device->cs_gpio, GPIO_LOW);
-    ret = spi_write(device->spi_device, sizeof(write_reg), write_reg, DEFAULT_TIMEOUT);
+    ret = spi_write(device->spi_device, write_reg, sizeof(write_reg), DEFAULT_TIMEOUT);
     gpio_write(device->cs_gpio, GPIO_HIGH);
     if (ret < 0) { goto exit; }
     ret = E_SUCCESS;
@@ -246,7 +246,7 @@ int32_t nrf24l01p_w_tx_payload(const struct nrf24l01p * const device, uint32_t s
     }
     data_to_write[0] = 0b10100000;
     memcpy(&data_to_write[1], data, size);
-    if ((ret = spi_write(device->spi_device, 1 + size, data_to_write, 0)) < 0) { goto exit; }
+    if ((ret = spi_write(device->spi_device, data_to_write, 1 + size, 0)) < 0) { goto exit; }
     if (ret > 0) { ret = E_SUCCESS; }
 
     exit:
@@ -289,7 +289,7 @@ int32_t nrf24l01p_flush_tx(const struct nrf24l01p * const device)
 {
     int32_t ret;
     const uint8_t opcode = 0b11100001;
-    ret = spi_write(device->spi_device, 1, &opcode, 0);
+    ret = spi_write(device->spi_device, &opcode, sizeof(opcode), 0);
     if (ret > 0) { ret = E_SUCCESS; }
 
     return ret;
@@ -299,7 +299,7 @@ int32_t nrf24l01p_flush_rx(const struct nrf24l01p * const device)
 {
 int32_t ret;
     const uint8_t opcode = 0b11100010;
-    ret = spi_write(device->spi_device, 1, &opcode, 0);
+    ret = spi_write(device->spi_device, &opcode, sizeof(opcode), 0);
     if (ret > 0) { ret = E_SUCCESS; }
 
     return ret;
@@ -307,20 +307,20 @@ int32_t ret;
 
 void nrf24l01p_transmit(const struct nrf24l01p * const device)
 {
-    gpio_write(device->ce_gpio, 1);
+    gpio_write(device->ce_gpio, GPIO_HIGH);
     vTaskDelay(1); // FIXME: wait 10µs instead of 1ms
-    gpio_write(device->ce_gpio, 0);
+    gpio_write(device->ce_gpio, GPIO_LOW);
 }
 
 void nrf24l01p_enable_receiver(const struct nrf24l01p * const device)
 {
-    gpio_write(device->ce_gpio, 1);
+    gpio_write(device->ce_gpio, GPIO_HIGH);
     vTaskDelay(1);
 }
 
 void nrf24l01p_disable_receiver(const struct nrf24l01p * const device)
 {
-    gpio_write(device->ce_gpio, 0);
+    gpio_write(device->ce_gpio, GPIO_LOW);
 }
 
 int32_t nrf24l01p_enable_tx_mode(const struct nrf24l01p * const device)
