@@ -35,5 +35,7 @@ extern const void *device_get_by_name(const char *dev_name);
 #define DEFAULT_USART   "default_usart"
 /** LED used for blinky task */
 #define DEFAULT_LED     "led_gpio"
+/** Default CPU */
+#define DEFAULT_CPU     "cpu"
 
 #endif // CORE_INCLUDE_DEVICE_DEVICE_H_

@@ -53,6 +53,7 @@ C_SOURCES += \
 	core/src/device/spi.c \
 	core/src/device/i2c.c \
 	core/src/device/i2s.c \
+	core/src/device/cpu.c \
 	core/errors.c
 
 # ulibc
