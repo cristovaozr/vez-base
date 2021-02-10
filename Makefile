@@ -82,7 +82,11 @@ C_SOURCES += \
 
 # Components
 C_SOURCES += \
-	components/vez-shell/src/vez-shell.c
+	components/vez-shell/src/vez-shell.c \
+	components/fatfs/impl/fatfs_impl.c \
+	components/fatfs/source/ff.c \
+	components/fatfs/source/ffsystem.c \
+	components/fatfs/source/ffunicode.c \
 
 # Fetching sources from ARCH related defines
 C_SOURCES += $(ARCH_C_SOURCES)

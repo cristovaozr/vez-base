@@ -27,6 +27,9 @@
 #include "drivers/sdcard/sdcard_spi_impl.h"
 
 #include "components/vez-shell/include/vez-shell.h"
+#include "components/fatfs/impl/fatfs_impl.h"
+#include "components/fatfs/source/ff.h"
+#include "components/fatfs/source/diskio.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -277,13 +280,13 @@ static int sdcard(int argc, char **argv)
     uint8_t block[512];
 
     int32_t ret = sdcard_init(&sdcard);
-    DBG("SHELL", "sdcard_init(): %s", error_to_str(ret));
+    DBG(TAG, "sdcard_init(): %s", error_to_str(ret));
     if (ret < 0) goto exit;
 
     ret = sdcard_read_block(&sdcard, 0, block);
-    DBG("SHELL", "sdcard_read_block(): %s", error_to_str(ret));
+    DBG(TAG, "sdcard_read_block(): %s", error_to_str(ret));
     if (ret < 0) goto exit;
-    DBG("SHELL", "Amount read: %d", ret);
+    DBG(TAG, "Amount read: %d", ret);
     HEXDUMP(block, sizeof(block));
 
     exit:
@@ -293,7 +296,7 @@ static int sdcard(int argc, char **argv)
 static int sdwrite(int argc, char **argv)
 {
     uint8_t garbage = strtol(argv[0], NULL, 16);
-    DBG("SHELL", "Writing %.2x on SDCARD block 0", garbage);
+    DBG(TAG, "Writing %.2x on SDCARD block 0", garbage);
     uint8_t block[512];
     memset(block, garbage, sizeof(block));
 
@@ -306,13 +309,59 @@ static int sdwrite(int argc, char **argv)
     };
 
     int32_t ret = sdcard_init(&sdcard);
-    DBG("SHELL", "sdcard_init(): %s", error_to_str(ret));
+    DBG(TAG, "sdcard_init(): %s", error_to_str(ret));
     if (ret < 0) goto exit;
 
     ret = sdcard_write_block(&sdcard, 0, block);
-    DBG("SHELL", "sdcard_write_block(): %s", error_to_str(ret));
+    DBG(TAG, "sdcard_write_block(): %s", error_to_str(ret));
     if (ret < 0) goto exit;
-    DBG("SHELL", "Amount written: %d", ret);
+    DBG(TAG, "Amount written: %d", ret);
+
+    exit:
+    return E_SUCCESS;
+}
+
+int fatfsls (int argc, char **argv)
+{
+    const struct sdcard_spi_priv priv = {
+        .spi = device_get_by_name("spi1"),
+        .cs = device_get_by_name("spi1_cs")
+    };
+    const struct sdcard sdcard = {
+        .priv = &priv
+    };
+
+    int32_t ret = fatfs_impl_set_sdcard(&sdcard);
+    if (ret < 0) {
+        DBG(TAG, "fatfs_impl_set_sdcard(): %s", error_to_str(ret));
+        goto exit;
+    }
+
+    FATFS fatfs;
+    FRESULT ff_res;
+    DIR dir;
+    FILINFO filinfo;
+    const char *fpath = "/";
+
+    ff_res = f_mount(&fatfs, "SD", 1);
+    DBG(TAG, "f_mount(): %d", ff_res);
+    if (ff_res != FR_OK) goto exit;
+    ff_res = f_opendir(&dir, fpath);
+    DBG(TAG, "f_opendir(): %d", ff_res);
+    if (ff_res != FR_OK) goto exit;
+
+    uprintf("'/' listing:\r\n");
+    for (;;) {
+        char type;
+        ff_res = f_readdir(&dir, &filinfo);
+        if (ff_res != FR_OK || filinfo.fname[0] == 0) break;
+        if (filinfo.fattrib & AM_DIR) type = 'd';
+        else type = 'f';
+
+        uprintf("%c\t%s\r\n", type, filinfo.fname);
+    }
+    ff_res = f_closedir(&dir);
+    DBG(TAG, "f_closedir(): %d", ff_res);
 
     exit:
     return E_SUCCESS;
@@ -329,6 +378,7 @@ static const struct vez_shell_entry cmd_list[] = {
     {"nrf24l01p", nrf24l01p, "Configures nRF24L01+"},
     {"sdcard",  sdcard, "Tests SDCARD implementation"},
     {"sdwrite", sdwrite, "Writes garbage on SDCARD block 0"},
+    {"fatfsls", fatfsls, "Lists directory from FatFs"},
     {NULL, NULL, NULL}
 };
 
@@ -343,11 +393,11 @@ static void shell_task(void *arg)
     }
 }
 
-#define SHELL_TASK_SIZE 384
+#define SHELL_TASK_SIZE 1024
 static StackType_t shell_stack[SHELL_TASK_SIZE];
 static StaticTask_t shell_tcb;
 
 void declare_shell_task(void)
 {
-    xTaskCreateStatic(shell_task, "shell", SHELL_TASK_SIZE, NULL, tskIDLE_PRIORITY, shell_stack, &shell_tcb);
+    xTaskCreateStatic(shell_task, TAG, SHELL_TASK_SIZE, NULL, tskIDLE_PRIORITY, shell_stack, &shell_tcb);
 }

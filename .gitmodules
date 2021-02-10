@@ -7,3 +7,6 @@
 [submodule "components/vez-shell"]
 	path = components/vez-shell
 	url = git@github.com:cristovaozr/vez-shell.git
+[submodule "components/fatfs"]
+	path = components/fatfs
+	url = git@github.com:cristovaozr/fatfs.git
