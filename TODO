@@ -1,0 +1,27 @@
+Pendente:
+- [ ] Redefinir a API de PWM (A ideia por trás da API de PWM é manter a frequência do PWM fixa (talvez 50Hz) e só será possível mexer no duty cycle do PWM)
+- [ ] Definir uma API para ADC (Uma das ideias é colocar duas funções de leitura: uma que dá o valor cru (LSB) e outra que retorna o equivalente em tensão do pino (volts))
+- [ ] Trocar as filas de dispositivo para alocação estática
+- [ ] Mexer no pool de memória do FreeRTOS para ocupar o restante livre de SRAM do MCU
+- [ ] Refazer implementação das funções de init da USART em arch/bluepill
+- [ ] Implementar as funções de inicialização e leitura do RTC em arch/bluepill
+- [ ] Implementar as funções de inicialização e leitura do RTC em arch/open407z
+- [ ] Colocar IRQ e filas nas implementações da SPI em arch/bluepill
+- [ ] Colocar IRQ e filas nas implementações da SPI em arch/open407z
+- [ ] Implementar e habilitar escrita no FatFs
+- [ ] Definir uma API para permitir carregmento de addons/plugins no VEZ
+- [ ] Colocar IRQ e filas nas implementações de I2C em arch/bluepill
+- [ ] Colocar IRQ e filas nas implementações de I2C em arch/open407z
+- [ ] Colocar IRQ e filas na implementação de I2S em arch/open407z
+- [ ] Implementar função "free" para dar relatório de memória SRAM do MCU
+- [ ] Separar grupos de comandos do Shell em arquivos distintos para melhorar reuso
+- [ ] Implementar comando de controle RAW de GPIO
+
+Desirable:
+- [ ] Pensar numa maneira de habilitar e desabilitar componentes em tempo de compilação (menuconfig?)
+- [ ] Colocar função para visualizar logs em tempo de execução (log view)
+- [ ] Colocar logging em outra USART ao invés do Shell
+
+Won't do:
+    - API para timers
+    - API para DMA
