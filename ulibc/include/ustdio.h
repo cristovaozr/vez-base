@@ -1,3 +1,11 @@
+/**
+ * @author Cristóvão Zuppardo Rufino <cristovaozr@gmail.com>
+ * @version 0.1
+ *
+ * @copyright Copyright Cristóvão Zuppardo Rufino (c) 2020-2021
+ * Please see LICENCE file to information regarding licensing
+ */
+
 #ifndef ULIBC_INCLUDE_USTDIO_H_
 #define ULIBC_INCLUDE_USTDIO_H_
 
