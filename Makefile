@@ -64,6 +64,7 @@ C_SOURCES += \
 # Tasks
 C_SOURCES += \
 	tasks/shell/shell.c \
+	tasks/shell/shell_command_impl.c \
 	tasks/blinky/blinky.c
 
 # Drivers
