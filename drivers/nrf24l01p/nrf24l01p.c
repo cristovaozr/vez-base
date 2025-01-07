@@ -137,7 +137,7 @@ int32_t nrf24l01p_default_setup(const struct nrf24l01p * const device)
         {NRF24L01P_REG_RF_SETUP,    RF_SETUP_RF_DR_HIGH | RF_SETUP_RF_PWR_0},
     };
 
-    gpio_write(device->ce_gpio, 0);
+    gpio_write(device->ce_gpio, GPIO_LOW);
 
     for (int i = 0; i < ARRAY_SIZE(configuration); i++) {
         DBG(TAG, "Writing register [%.2x] with value [%.2x]", configuration[i].reg, configuration[i].config);
@@ -165,8 +165,8 @@ int32_t nrf24l01p_standby_1(const struct nrf24l01p * const device)
     int32_t ret = read_modify_write(device, NRF24L01P_REG_CONFIG, 0, CONFIG_PWR_UP);
     if (ret < 0) { goto exit; }
 
+    // gpio_write(device->ce_gpio, GPIO_LOW);
     vTaskDelay(2);
-    gpio_write(device->ce_gpio, 0);
 
     exit:
     return ret;
@@ -305,30 +305,37 @@ int32_t ret;
     return ret;
 }
 
-void nrf24l01p_transmit(const struct nrf24l01p * const device)
+int32_t nrf24l01p_enable_rx_mode(const struct nrf24l01p * const device)
 {
+    // Sequence: Standby-I -> RX Settling -> RX Mode
     gpio_write(device->ce_gpio, GPIO_HIGH);
-    vTaskDelay(1); // FIXME: wait 10µs instead of 1ms
-    gpio_write(device->ce_gpio, GPIO_LOW);
-}
-
-void nrf24l01p_enable_receiver(const struct nrf24l01p * const device)
-{
-    gpio_write(device->ce_gpio, GPIO_HIGH);
+    int32_t ret = read_modify_write(device, NRF24L01P_REG_CONFIG, 0, CONFIG_PRIM_RX);
+    if (ret < 0) { goto exit; }
     vTaskDelay(1);
+
+    exit:
+    return ret;
 }
 
-void nrf24l01p_disable_receiver(const struct nrf24l01p * const device)
+void nrf24l01p_disable_rx_mode(const struct nrf24l01p * const device)
 {
+    // Sequence: RX Mode -> Standby-I
     gpio_write(device->ce_gpio, GPIO_LOW);
 }
 
 int32_t nrf24l01p_enable_tx_mode(const struct nrf24l01p * const device)
 {
-    return read_modify_write(device, NRF24L01P_REG_CONFIG, CONFIG_PRIM_RX, 0);
+    gpio_write(device->ce_gpio, GPIO_HIGH);
+    int32_t ret = read_modify_write(device, NRF24L01P_REG_CONFIG, CONFIG_PRIM_RX, 0);
+    if (ret < 0) { goto exit; }
+    vTaskDelay(1);
+
+    exit:
+    return ret;
 }
 
-int32_t nrf24l01p_disable_tx_mode(const struct nrf24l01p * const device)
+void nrf24l01p_disable_tx_mode(const struct nrf24l01p * const device)
 {
-    return read_modify_write(device, NRF24L01P_REG_CONFIG, 0, CONFIG_PRIM_RX);
+    // Sequence: TX Mode -> Standby-I
+    gpio_write(device->ce_gpio, GPIO_LOW);
 }

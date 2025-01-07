@@ -80,4 +80,8 @@ int sdwrite(int argc, char **argv)
     return E_SUCCESS;
 }
 
+<<<<<<< Updated upstream
 SHELL_DECLARE_COMMAND("sdwrite", sdwrite, "Writes a full block to the SDCARD");
+=======
+// SHELL_DECLARE_COMMAND("sdwrite", sdwrite, "Writes a full block to the SDCARD");
+>>>>>>> Stashed changes

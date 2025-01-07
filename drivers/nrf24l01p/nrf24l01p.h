@@ -127,19 +127,12 @@ extern int32_t nrf24l01p_flush_tx(const struct nrf24l01p * const device);
  */
 extern int32_t nrf24l01p_flush_rx(const struct nrf24l01p * const device);
 
-/**
- * @brief Toggles CE so that the nRF24L01+ transmits
- * 
- * @param device nRF24L01+ device definition
- */
-extern void nrf24l01p_transmit(const struct nrf24l01p * const device);
+extern int32_t nrf24l01p_enable_rx_mode(const struct nrf24l01p * const device);
 
-extern void nrf24l01p_enable_receiver(const struct nrf24l01p * const device);
-
-extern void nrf24l01p_disable_receiver(const struct nrf24l01p * const device);
+extern void nrf24l01p_disable_rx_mode(const struct nrf24l01p * const device);
 
 extern int32_t nrf24l01p_enable_tx_mode(const struct nrf24l01p * const device);
 
-extern int32_t nrf24l01p_disable_tx_mode(const struct nrf24l01p * const device);
+extern void nrf24l01p_disable_tx_mode(const struct nrf24l01p * const device);
 
 #endif // DRIVERS_NRF24L01P_NRF24L01P_H_

@@ -85,6 +85,8 @@ int nrf24l01p_tx(int argc, char **argv)
     if (ret < 0) { goto exit; }
 
     while (1) {
+        ret = nrf24l01p_w_tx_payload(&nrf, 4, "dead");
+        DBG(TAG, "ret == %d (%s)", ret, error_to_str(ret));
         int c = ugetchar();
         if (c == 'q' || c == 'Q') break;
         vTaskDelay(250);

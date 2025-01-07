@@ -17,6 +17,10 @@
 
 #include "components/vez-shell/include/vez-shell.h"
 
+#include "include/device/device.h"
+#include "include/device/usart.h"
+#include "include/device/pool_op.h"
+
 #include <string.h>
 #include <stdlib.h>
 
@@ -100,10 +104,45 @@ static int mem(int argc, char **argv)
     return ret;
 }
 
+// static int gps_read(int argc, char **argv)
+// {
+//     (void)argc; (void)argv;
+//     int ret = E_SUCCESS;
+
+//     const struct usart_device *gps_usart = device_get_by_name("usart1");
+//     const struct usart_device *dbg_usart = device_get_by_name(DEFAULT_USART);
+//     if (gps_usart == NULL) {
+//         ERROR(TAG, "Could not get usart1 device!");
+//         ret = E_DEVICE_NOT_FOUND;
+//         goto exit;
+//     }
+
+//     while(1) {
+//         int c = ugetchar();
+//         if (c == 'q' || c == 'Q') break;
+//         char line[80];
+
+//         uint32_t size;
+//         int32_t lret;
+//         if ((lret = usart_pool(gps_usart, POLL_RX_QUEUE_SIZE, &size))) {
+//             ERROR(TAG, "usart_pool(): %s", error_to_str(lret));
+//             continue;
+//         }
+//         if (size) {
+//             int32_t lsize = usart_read(gps_usart, line, size, 100);
+//             usart_write(dbg_usart, line, lsize, 100);
+//         }
+//     }
+
+//     exit:
+//     return ret;
+// }
+
 const struct vez_shell_entry basic_entries[] = {
     {"help",    help, "Show help"},
     {"hexdump", hexdump, "Dumps memory. Usage: dumpmem [hexaddr] [len]"},
     {"mem",     mem,  "Peeks and Pokes any address"}
+    // {"gps_read", gps_read, "Reads GPS input"}
 };
 
 SHELL_DECLARE_COMMAND_ARRAY(basic_entries[]);
