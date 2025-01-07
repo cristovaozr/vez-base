@@ -16,7 +16,7 @@ TARGET = vez-base
 DEBUG = 1
 
 # Build path
-BUILD_DIR = /tmp/build
+BUILD_DIR = /tmp/build/$(ARCH)
 
 # Binaries
 PREFIX = arm-none-eabi-
@@ -167,7 +167,7 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(BIN) $< $@
 	
 $(BUILD_DIR):
-	mkdir $@
+	mkdir -pv $@
 
 # Flashes built code to microcontroller
 write:
